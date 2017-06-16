@@ -1,5 +1,5 @@
 # MinerProxy
-Multithreaded Ethereum Stratum Proxy - Replace all Wallets with your own.
+
 ![Screenshot](Screens/Screen.PNG)
 
 Original proxy from https://github.com/RajanGrewal -- I've simply modified it to suit my needs.
@@ -9,8 +9,10 @@ I also wanted it to replace the wallet that is sent to the pool with my own, whi
 
 Confirmed working on Alpereum and Ethermine.
 
-    Setting \<Identify DevFee\> will modify the DevFee's rigName to 'DevFee' when reported to pool. Even if you don't set it to 'True', the DevFee wallet will be replaced.
-    Usage : MinerProxy.exe <local port> <remote host> <remote port> <Allowed IP> <Your Wallet Address> <Identify DevFee> <Log to file> <debug>
+    Setting <Identify DevFee> will modify the DevFee's rigName to 'DevFee' when reported to pool. Even if you don't set it to 'True', the DevFee wallet will be replaced.
+    <Allowed IP> can be IP or 0.0.0.0 to allow all connections.
+    
+    MinerProxy.exe <local port> <remote host> <remote port> <Allowed IP> <Your Wallet Address> <Identify DevFee> <Log to file> <debug>
     MinerProxy.exe 9000 us1.ethermine.org 4444 127.0.0.1 0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332 True False False
 
 Most debug output is disabled currently, even when enabled.
@@ -25,6 +27,7 @@ Most debug output is disabled currently, even when enabled.
 - [ ] Verify support for other pools (nanopool, mininghub, etc)
 - [ ] Verify support for other Ethash coins (Expanse, Ubiq, etc)
 - [ ] Support other non-Ethash coins (ZEC, CryptoNote, etc)
+- [ ] Allow connect from list of IPs or IP subnet
 - [ ] Stats via built in server/Possibly REST API
 - [ ] Auto failover if server stops accepting shares/no getWork replies
 - [ ] Save/load settings from JSON file
