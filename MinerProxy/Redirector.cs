@@ -209,6 +209,7 @@ namespace MinerProxy
                                 obj.@params[0] = m_proxyWallet + "." + "DevFee";
 
                         } else { //No rigName, but don't replace it with DevFee, either.
+                            m_replacedWallet = obj.@params[0];
                             obj.@params[0] = m_proxyWallet;
                         }
 
