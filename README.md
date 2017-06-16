@@ -19,6 +19,7 @@ Most debug output is disabled currently, even when enabled.
 
 ## Stale shares
 If you run the Proxy on your local network, Claymore will display this error:
+
     Miner detected that you use local pool or local stratum proxy.
     This mode is not currently supported and will cause more stale shares.
 
