@@ -17,8 +17,16 @@ Confirmed working on Alpereum and Ethermine.
 
 Most debug output is disabled currently, even when enabled.
 
+## Stale shares
+If you run the Proxy on your local network, Claymore will display this error:
+    Miner detected that you use local pool or local stratum proxy.
+    This mode is not currently supported and will cause more stale shares.
 
-# Todo
+I'm not sure how to resolve this, other than running the proxy from a remote computer.
+My mining rigs are off-site, so I'm run the proxy from home.
+Whether this will actually cause stale shares, I don't know. There's a lot of suspicion behind Claymore and its handling of Stale shares, but I'm open to speculation.
+
+## Todo
 - [x] Log traffic to file
 - [x] Deserialize/Serialize JSON objects
 - [x] Replace all wallets with your own
@@ -33,3 +41,6 @@ Most debug output is disabled currently, even when enabled.
 - [ ] Save/load settings from JSON file
 - [ ] Verbose mode/Multiple debug levels
 - [ ] Understand full Stratum protocol
+
+### Help
+I realize this code probably looks pretty horrible. I'm still quite new to C#, so if you have any recommendations or improvements, please submit a PR and hopefully I can learn from it!
