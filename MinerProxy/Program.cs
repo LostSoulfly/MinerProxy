@@ -29,8 +29,6 @@ namespace MinerProxy
 
         static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.UnhandledException += (s, e) => File.WriteAllText("Exceptions.txt", e.ExceptionObject.ToString());
-
             if (args.Length < 6)
             {
                 Console.WriteLine("Usage : MinerProxy.exe <local port> <remote host> <remote port> <Allowed IP> <Your Wallet Address> <Identify DevFee> <Log to file> <debug>");
@@ -55,6 +53,8 @@ namespace MinerProxy
                 Console.ReadKey();
                 return;
             }
+
+            AppDomain.CurrentDomain.UnhandledException += (s, e) => File.WriteAllText("Exceptions.txt", e.ExceptionObject.ToString());
 
             if (log) { //if logging enabled, let's start the logging queue
                 var task = new Task(() => ProcessLogQueue(), TaskCreationOptions.LongRunning);
