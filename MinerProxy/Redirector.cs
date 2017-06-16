@@ -279,7 +279,7 @@ namespace MinerProxy
             }
             catch (Exception ex)
             {
-                Logger.LogToConsole(ex.ToString());
+                Logger.LogToConsole(ex.Message);
                 if (m_debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length));
             }
 
