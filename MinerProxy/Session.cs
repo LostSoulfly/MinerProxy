@@ -59,7 +59,7 @@ namespace MinerProxy
                 OnDataReceived(m_buffer,size);
 
             Receive();
-            Thread.Sleep(1);
+            Thread.Sleep(1); //Hopefully resolves multiple packets being received at one time, causing JSON read errors
         }
 
         public void Send(byte[] buffer,int length)
