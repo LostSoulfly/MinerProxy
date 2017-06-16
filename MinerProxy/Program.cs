@@ -69,10 +69,16 @@ namespace MinerProxy
 
             Logger.LogToConsole("Replacing Wallets with: " + walletAddress);
 
-            listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            listener.Bind(new IPEndPoint(IPAddress.Any, localPort));
-            listener.Listen(100);
-
+            try
+            {
+                listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                listener.Bind(new IPEndPoint(IPAddress.Any, localPort));
+                listener.Listen(100);
+            } catch (Exception ex)
+            {
+                Console.WriteLine("Error: {0}", ex.Message);
+                return;
+            }
             allDone = new ManualResetEvent(false);
 
             Console.Title = string.Concat("MinerProxy : ", remoteHost, ':', remotePort);
