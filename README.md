@@ -1,7 +1,5 @@
 # MinerProxy
 
-Not currently working -- there is an encoding(?) issue that I need to fix.
-
 ![Screenshot](Screens/Screen.PNG)
 
 Original proxy from https://github.com/RajanGrewal -- I've simply modified it to suit my needs.
