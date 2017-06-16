@@ -16,12 +16,12 @@ namespace MinerProxy
         private string m_proxyWallet;
         private string m_replacedWallet;
         private bool m_replaceRigName;
-        private string m_rigName;
+        private string m_rigName = "";
         private bool m_debug;
         private bool m_alive;
         private bool m_log;
-        private long m_submittedShares;
-        private long m_acceptedShares;
+        private long m_submittedShares = 0;
+        private long m_acceptedShares= 0;
 
         public Redirector(Socket client, string ip, int port, string walletAddress, bool replaceRigName, bool debug, bool log)
         {
@@ -116,9 +116,14 @@ namespace MinerProxy
                     {
                         ServerRootObjectBool obj = JsonConvert.DeserializeObject<ServerRootObjectBool>(Encoding.UTF8.GetString(buffer, 0, length));
 
-                        if (obj.result == false)
-                            Logger.LogToConsole("Server Error: " + obj.error);
-
+                        if ((obj.error != null) && obj.result.Equals(null))
+                        {
+                            Logger.LogToConsole(string.Format("Server Error: {0}: {1} ", obj.error.code, obj.error.message));
+                        } else if (!obj.result.Equals(null))
+                        {
+                            if (obj.result == false)
+                                Logger.LogToConsole("Server Error: " + obj.error);
+                        }
                         switch (obj.id)
                         {
                             case 2:
@@ -175,19 +180,21 @@ namespace MinerProxy
         }
         private void OnClientPacket(byte[] buffer, int length)
         {
+            OnEthPacket(buffer, length);
+
+            if (m_log)
+                Program._logMessages.Add(new LogMessage(m_endpoint + ".txt", DateTime.Now.ToLongTimeString() + " >---->\r\n" + Encoding.UTF8.GetString(buffer,0,length)));
+        }
+
+        private void OnEthPacket(byte[] buffer, int length)
+        {
             bool madeChanges = false;
             byte[] newBuffer = null;
             int newLength = 0;
-
-            //if (length < 0) length = buffer.Length;
-            //todo: monitor submitted/accepted shares and if the ratio is too wide, change the server to a failover server and disconnect
-            //this will force claymore to reconnect to the proxy and a new server will be connected to. say 10?
-
+            
             try   //try to deserialize the packet, if it's not Json it will fail. that's ok.
             {
-
                 ClientRootObject obj;
-
                 obj = JsonConvert.DeserializeObject<ClientRootObject>(Encoding.UTF8.GetString(buffer, 0, length));
 
                 switch (obj.id)
@@ -197,23 +204,38 @@ namespace MinerProxy
                         madeChanges = true;
                         if (obj.@params[0].Contains("."))
                         {   //There is likely a rigName in the wallet address.
+
                             m_replacedWallet = obj.@params[0];
                             m_rigName = obj.@params[0].Substring(obj.@params[0].IndexOf(".") + 1);
                             obj.@params[0] = m_proxyWallet + "." + m_rigName;
 
-                        } else if (m_replaceRigName) { //there is no rigName, so we just replace the wallet
+                        }
+                        else if (m_replaceRigName)
+                        { //there is no rigName, so we just replace the wallet
                             m_replacedWallet = obj.@params[0];
-                            
+
                             if (m_replacedWallet != m_proxyWallet)
                                 m_rigName = "DevFee";
-                                obj.@params[0] = m_proxyWallet + "." + m_rigName;
-
-                        } else { //No rigName, but don't replace it with DevFee, either.
+                            
+                            if (obj.worker == null)
+                            {
+                                //if rigName exists, add the rigname to the new wallet, else just use wallet
+                                obj.@params[0] = (m_rigName.Length > 0) ? (m_proxyWallet + "." + m_rigName) : (m_proxyWallet);
+                            }
+                            else
+                            {
+                                m_rigName = obj.worker;
+                                obj.@params[0] = m_proxyWallet;
+                                Logger.LogToConsole(string.Format("Worker: {0}", m_rigName));
+                            }
+                        }
+                        else
+                        { //No rigName, but don't replace it with DevFee, either.
                             m_replacedWallet = obj.@params[0];
+                            if (obj.worker != null) m_rigName = obj.worker;
                             obj.@params[0] = m_proxyWallet;
                         }
-
-                        string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n"; //here's the thing that killed me. I needed to put a newline on the end. Thanks WireShark.
+                        string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n"; 
                         //if (m_debug) Logger.LogToConsole("Before: " + Encoding.UTF8.GetString(buffer, 0, length));
                         Logger.LogToConsole("Old Wallet: " + m_replacedWallet);
                         Logger.LogToConsole("New Wallet: " + obj.@params[0]);
@@ -267,14 +289,13 @@ namespace MinerProxy
                 {
                     //if (m_debug) Logger.LogToConsole("Sending buffer: " + Encoding.UTF8.GetString(buffer, 0, length));
                     m_server.Send(buffer, length);
-                } else {
+                }
+                else
+                {
                     //if (m_debug) Logger.LogToConsole("Sending modified buffer: " + Encoding.UTF8.GetString(newBuffer, 0, newLength));
                     m_server.Send(newBuffer, newLength);
                 }
             }
-
-            if (m_log)
-                Program._logMessages.Add(new LogMessage(m_endpoint + ".txt", DateTime.Now.ToLongTimeString() + " >---->\r\n" + Encoding.UTF8.GetString(buffer,0,length)));
         }
 
         public void Dispose()
