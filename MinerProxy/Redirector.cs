@@ -212,7 +212,7 @@ namespace MinerProxy
                             obj.@params[0] = m_proxyWallet;
                         }
 
-                        string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None);
+                        string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n"; //here's the thing that killed me. I needed to put a newline on the end. Thanks WireShark.
                         //if (m_debug) Logger.LogToConsole("Before: " + Encoding.UTF8.GetString(buffer, 0, length));
                         Logger.LogToConsole("Old Wallet: " + m_replacedWallet);
                         Logger.LogToConsole("New Wallet: " + obj.@params[0]);
@@ -268,7 +268,6 @@ namespace MinerProxy
                     m_server.Send(buffer, length);
                 } else {
                     //if (m_debug) Logger.LogToConsole("Sending modified buffer: " + Encoding.UTF8.GetString(newBuffer, 0, newLength));
-                    m_server.Send(buffer, length);
                     m_server.Send(newBuffer, newLength);
                 }
             }
