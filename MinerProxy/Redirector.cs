@@ -203,10 +203,10 @@ namespace MinerProxy
 
                         } else if (m_replaceRigName) { //there is no rigName, so we just replace the wallet
                             m_replacedWallet = obj.@params[0];
-                            m_rigName = "DevFee";
-
+                            
                             if (m_replacedWallet != m_proxyWallet)
-                                obj.@params[0] = m_proxyWallet + "." + "DevFee";
+                                m_rigName = "DevFee";
+                                obj.@params[0] = m_proxyWallet + "." + m_rigName;
 
                         } else { //No rigName, but don't replace it with DevFee, either.
                             m_replacedWallet = obj.@params[0];
