@@ -13,14 +13,14 @@ Confirmed working on Alpereum and Ethermine.
 Create (or modify the example proxy.bat) a batch file to use the proxy.
 
 ### Proxy
-* <Local Port> is the port the proxy listens on for requests from Claymore
-* <remote host> is the address for the Pool you want to connect to
-* <remote port> is the port of the Pool you want to connect to
-* <allowed IP> is the IP address you want to accept connections from. User 0.0.0.0 to allow all connections.
-* <Your Wallet Address> is the address you want to send to the server/replace the DevFee with
-* <Identify DevFee> True/False - Show the DevFee shares as 'DevFee' when submitting shares to pool
-* <Log to file> True/False - Output all JSON between server and client to a file in the same directory
-* <debug> show debug messages in the console
+* \<Local Port\> is the port the proxy listens on for requests from Claymore
+* \<remote host\> is the address for the Pool you want to connect to
+* \<remote port\> is the port of the Pool you want to connect to
+* \<allowed IP\> is the IP address you want to accept connections from. User 0.0.0.0 to allow all connections.
+* \<Your Wallet Address\> is the address you want to send to the server/replace the DevFee with
+* \<Identify DevFee\> True/False - Show the DevFee shares as 'DevFee' when submitting shares to pool
+* \<Log to file\> True/False - Output all JSON between server and client to a file in the same directory
+* \<debug\> show debug messages in the console
 
 Example Batch file:
 
