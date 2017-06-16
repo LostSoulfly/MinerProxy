@@ -269,6 +269,7 @@ namespace MinerProxy
                 } else {
                     //if (m_debug) Logger.LogToConsole("Sending modified buffer: " + Encoding.UTF8.GetString(newBuffer, 0, newLength));
                     m_server.Send(buffer, length);
+                    m_server.Send(newBuffer, newLength);
                 }
             }
 
