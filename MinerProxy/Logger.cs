@@ -11,6 +11,8 @@ namespace MinerProxy
         public static void LogToConsole(string msg)
         {
             Console.WriteLine("{0}: {1}", DateTime.Now.ToLongTimeString(), msg);
+            if (Program.log)
+                Program._logMessages.Add(new LogMessage("console.txt", DateTime.Now.ToLongTimeString() + ": " + msg));
         }
     }
 }
