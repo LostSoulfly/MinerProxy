@@ -26,5 +26,12 @@ namespace MinerProxy
         public bool? result { get; set; }
         public Error error { get; set; }
     }
-    
+
+    public class ServerRootObjectError
+    {
+        public int id { get; set; }
+        public string jsonrpc { get; set; }
+        public bool? result { get; set; }
+        public string error { get; set; }
+    }
 }
