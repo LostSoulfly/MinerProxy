@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-
+using Newtonsoft.Json;
 //try to move the logging blocking collection into this class
 //then just initialize it once and have every thread add to it, instead of making a new thread
 //for each logger for each session
@@ -14,14 +14,9 @@ namespace MinerProxy
 {
     internal sealed class Program
     {
-        private static int localPort;
-        private static string remoteHost;
-        private static int remotePort;
-        public static bool log;
-        private static bool debug;
-        private static bool replaceRigName;
-        private static string walletAddress;
-        private static string allowedAddress;
+
+        public static Settings settings = new Settings();
+
         public static BlockingCollection<LogMessage> _logMessages = new BlockingCollection<LogMessage>();
 
         private static Socket listener;
@@ -29,50 +24,95 @@ namespace MinerProxy
 
         static void Main(string[] args)
         {
-            if (args.Length < 6)
+            if (args.Length < 6 && args.Length > 0) //check if they're using command args
             {
                 Console.WriteLine("Usage : MinerProxy.exe <local port> <remote host> <remote port> <Allowed IP> <Your Wallet Address> <Identify DevFee> <Log to file> <debug>");
                 Console.WriteLine("MinerProxy.exe 9000 us1.ethermine.org 4444 127.0.0.1 0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332 True False False");
                 return;
             }
+            else if (args.Length >= 6) //if they are, and the args match the 6 we're looking for..
+            {
+                try
+                {
+                    Logger.LogToConsole("Command arguments specified; not loading settings.json.");
+                    settings.localPort = Convert.ToInt32(args[0]);
+                    settings.remoteHost = args[1];
+                    settings.remotePort = Convert.ToInt32(args[2]);
+                    settings.walletAddress = args[4];
+                    settings.replaceRigName = Convert.ToBoolean(args[5]);
+                    settings.log = Convert.ToBoolean(args[6]);
+                    settings.debug = Convert.ToBoolean(args[7]);
 
-            try
-            {
-                localPort = Convert.ToInt32(args[0]);
-                remoteHost = args[1];
-                remotePort = Convert.ToInt32(args[2]);
-                allowedAddress = args[3];
-                walletAddress = args[4];
-                replaceRigName = Convert.ToBoolean(args[5]);
-                log = Convert.ToBoolean(args[6]);
-                debug = Convert.ToBoolean(args[7]);
+                    //switch (args[5].ToString.ToLower) {
+
+                    //    case: ""
+                    //}
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogToConsole("Check your command arguments: " + ex.Message);
+                    Console.ReadKey();
+                    return;
+                }
             }
-            catch (Exception ex)
+            else //there were no args, so we can check for a settings.json file
             {
-                Logger.LogToConsole("Check your command arguments: " + ex.Message);
-                Console.ReadKey();
-                return;
+                if (File.Exists("settings.json"))
+                {
+                    try
+                    {
+                        settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText("settings.json"));
+                        if (settings.localPort == 0)
+                        {
+                            Logger.LogToConsole("Local port missing!");
+                            return;
+                        }
+
+                        if (settings.remoteHost.Length == 0) 
+                        {
+                            Logger.LogToConsole("Remote host missing!");
+                            return;
+                        }
+
+                        if (settings.remotePort == 0)
+                        {
+                            Logger.LogToConsole("Remote port missing!");
+                            return;
+                        }
+                        if (settings.walletAddress.Length == 0)
+                        {
+                            Logger.LogToConsole("Wallet address missing!");
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Unable to load settings: " + ex.Message);
+                        return;
+                    }
+                }
             }
+            
 
             AppDomain.CurrentDomain.UnhandledException += (s, e) => File.WriteAllText("Exceptions.txt", e.ExceptionObject.ToString());
 
-            if (log) { //if logging enabled, let's start the logging queue
+            if (settings.log) { //if logging enabled, let's start the logging queue
                 var task = new Task(() => ProcessLogQueue(), TaskCreationOptions.LongRunning);
                 task.Start();
             }
 
-            if (debug)
+            if (settings.debug)
                 Logger.LogToConsole("Debug enabled");
 
-            if (replaceRigName)
+            if (settings.replaceRigName)
                 Logger.LogToConsole("Showing DevFee mining as 'DevFee' rigName");
 
-            Logger.LogToConsole("Replacing Wallets with: " + walletAddress);
+            Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress);
 
             try
             {
                 listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                listener.Bind(new IPEndPoint(IPAddress.Any, localPort));
+                listener.Bind(new IPEndPoint(IPAddress.Any, settings.localPort));
                 listener.Listen(100);
             } catch (Exception ex)
             {
@@ -81,15 +121,47 @@ namespace MinerProxy
             }
             allDone = new ManualResetEvent(false);
 
-            Console.Title = string.Concat("MinerProxy : ", remoteHost, ':', remotePort);
-            Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", localPort, allowedAddress));
-            
+            Console.Title = string.Concat("MinerProxy : ", settings.remoteHost, ':', settings.remotePort);
+            Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.localPort, listener.LocalEndPoint));
+
+            string key;
+
+            // We can accept console input, but we need to set up the listener on its own thread
+            // otherwise we can't listen for key events in the console
+            var listenerTask = new Task(() => listenerStart(), TaskCreationOptions.LongRunning);
+            listenerTask.Start();
+
             while (true)
             {
-                allDone.Reset();
-                listener.BeginAccept(new AsyncCallback(AcceptCallback),null);
-                allDone.WaitOne();
+                if (Console.KeyAvailable)
+                {
+                    key = Console.ReadKey(true).Key.ToString();
+                    
+                    switch (key)
+                    {
+                        case "S":
+                            //output current stats, like hashrate and shares and uptime
+                            break;
+
+                        case "C":
+                            //output current connection status
+                            //number of users, their addresses, and their rigNames
+                            break;
+
+                        case "Q":
+                            Console.WriteLine("Shutting down..");
+                            return;
+                            break;
+                    }
+                }
             }
+        }
+
+        private static void listenerStart()
+        {
+            allDone.Reset();
+            listener.BeginAccept(new AsyncCallback(AcceptCallback), null);
+            allDone.WaitOne();
         }
 
         private static void AcceptCallback(IAsyncResult iar)
@@ -100,18 +172,16 @@ namespace MinerProxy
             {
                 var socket = listener.EndAccept(iar);
 
-                IPAddress remoteAddress = ((IPEndPoint)socket.RemoteEndPoint).Address;
+                string remoteAddress = ((IPEndPoint)socket.RemoteEndPoint).Address.ToString();
 
-                if (allowedAddress != "0.0.0.0")
                 {
-                    if (!remoteAddress.Equals(IPAddress.Parse(allowedAddress)))
                     {
                         Logger.LogToConsole("Remote host " + remoteAddress + " not allowed; ignoring.");
 
                         return; //if the address supplied isn't allowed, just retrun and keep listening.
                     }
                 }
-                new Redirector(socket, remoteHost, remotePort, walletAddress, replaceRigName, debug, log);
+                new Redirector(socket, settings.remoteHost, settings.remotePort, settings.walletAddress, settings.replaceRigName, settings.debug, settings.log);
             }
             catch (SocketException se)
             {
@@ -121,7 +191,7 @@ namespace MinerProxy
 
         private static void ProcessLogQueue()
         {
-            Logger.LogToConsole("Logging queue started..");
+            if (settings.debug) Logger.LogToConsole("Logging queue started.");
 
             foreach (var msg in _logMessages.GetConsumingEnumerable())
             {
