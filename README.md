@@ -28,7 +28,7 @@ Example Batch file:
     MinerProxy.exe 9000 us1.ethermine.org 4444 127.0.0.1 0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332 True False False
 
 ### Claymore
--epool <Your Server's Address> <Local Port> -ewal
+-epool <Your Server's Address>:<Local Port> -ewal <Your wallet>
     
 Example Claymore batch file:
 
