@@ -17,6 +17,9 @@ namespace MinerProxy
         private string m_replacedWallet;
         private bool m_replaceRigName;
         private string m_rigName = "";
+        private string m_workerName = "";
+        private string m_displayName = "";
+        private bool m_noRigName;
         private bool m_debug;
         private bool m_alive;
         private bool m_log;
@@ -118,19 +121,23 @@ namespace MinerProxy
 
                         if ((obj.error != null) && obj.result.Equals(null))
                         {
-                            Logger.LogToConsole(string.Format("Server Error: {0}: {1} ", obj.error.code, obj.error.message));
-                        } else if (!obj.result.Equals(null))
+                            Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), m_displayName, obj.error.code, obj.error.message));
+                        }
+                        else if (!obj.result.Equals(null))
                         {
                             if (obj.result == false)
-                                Logger.LogToConsole("Server Error: " + obj.error);
+                            {
+                                Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), m_displayName, obj.error.code, obj.error.message));
+                            }
                         }
                         switch (obj.id)
                         {
                             case 2:
                                 if (obj.result == true)
                                 {
-                                    Logger.LogToConsole("Stratum Authorization success!");
-                                } else
+                                    Logger.LogToConsole("Stratum Authorization success: " + m_displayName);
+                                }
+                                else
                                 {
                                     Logger.LogToConsole("eth_SubmitLogin failed!");
                                 }
@@ -138,7 +145,7 @@ namespace MinerProxy
 
                             case 4:
                                 m_acceptedShares++;
-                                Logger.LogToConsole(string.Format("Share accepted: " + m_rigName + ". [{0}] ", m_acceptedShares));
+                                Logger.LogToConsole(string.Format("Share accepted: " + m_displayName + ". [{0}] ", m_acceptedShares));
                                 break;
 
                             case 6:
@@ -158,9 +165,33 @@ namespace MinerProxy
                     }
                     catch (Exception ex2)
                     {
-                        if (m_debug)
-                            Logger.LogToConsole(ex2.ToString());
-                            Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length));
+                        try
+                        {
+
+                            ServerRootObjectError obj = JsonConvert.DeserializeObject<ServerRootObjectError>(Encoding.UTF8.GetString(buffer, 0, length));
+
+                            if (obj.error != null && obj.error.Length > 0)
+                            {
+                                if (obj.result == false)
+                                Logger.LogToConsole(string.Format(("Server error for {0}: {1}"), m_displayName, obj.error));
+                            }
+                            else
+                            {
+                                Logger.LogToConsole(ex2.ToString());
+                                Logger.LogToConsole("From Server3 <----<");
+                                Logger.LogToConsole("ID: " + obj.id);
+                                Logger.LogToConsole("Result: " + obj.result);
+                                Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length));
+                            }
+
+                        }
+                        catch (Exception ex3)
+                        {
+                            if (m_debug)
+                                Logger.LogToConsole(ex3.ToString());
+                                Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length));
+
+                        }
                     }
                 }
                 
@@ -207,6 +238,7 @@ namespace MinerProxy
 
                             m_replacedWallet = obj.@params[0];
                             m_rigName = obj.@params[0].Substring(obj.@params[0].IndexOf(".") + 1);
+                            m_displayName = m_rigName;
                             obj.@params[0] = m_proxyWallet + "." + m_rigName;
 
                         }
@@ -215,25 +247,40 @@ namespace MinerProxy
                             m_replacedWallet = obj.@params[0];
 
                             if (m_replacedWallet != m_proxyWallet)
-                                m_rigName = "DevFee";
+                                m_displayName = "DevFee";
                             
-                            //This causes a strange issue.. Claymore reports Worker name as eth1.0? This causes us to not rename to DevFee.
+                            //Still no rigName? Not even from the Worker field?
                             if (obj.worker == null)
                             {
-                                //if rigName exists, add the rigname to the new wallet, else just use wallet
-                                obj.@params[0] = (m_rigName.Length > 0) ? (m_proxyWallet + "." + m_rigName) : (m_proxyWallet);
-                            }
-                            else
-                            {
-                                m_rigName = obj.worker;
+                                //No rigname and no worker? Just set the wallet address to our own and call it a day
                                 obj.@params[0] = m_proxyWallet;
-                                Logger.LogToConsole(string.Format("Worker: {0}", m_rigName));
+                                m_noRigName = true;
+                            }
+                            else if (obj.worker.Equals("eth1.0")) {
+                                //It's probably a DevFee - Could leave the DevFee wallet alone in future release but give it unique rigName
+                                //Here's an address of his: 0xc6F31A79526c641de4E432CB22a88BB577A67eaC
+                                //All mining is 'default' but we could stand out a bit :D
+                                if (m_replacedWallet != m_proxyWallet)
+                                { //if the wallet we're replacing isn't ours, it's the DevFee
+                                    m_displayName = "DevFee";
+                                } else
+                                {
+                                    m_noRigName = true;
+                                    m_displayName = m_name;
+                                }
+                                obj.@params[0] = m_proxyWallet;     //regardless what the wallet was, let's replace it
+                            }
+                            else {
+                                m_displayName = obj.worker;
+                                m_workerName = obj.worker;
+                                obj.@params[0] = m_proxyWallet;
+                                if (m_debug) Logger.LogToConsole(string.Format("Worker: {0}", m_workerName));
                             }
                         }
                         else
                         { //No rigName, but don't replace it with DevFee, either.
                             m_replacedWallet = obj.@params[0];
-                            if (obj.worker != null) m_rigName = obj.worker;
+                            if (obj.worker != null) m_displayName = obj.worker;
                             obj.@params[0] = m_proxyWallet;
                         }
                         string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n"; 
@@ -253,14 +300,14 @@ namespace MinerProxy
 
                     case 4: //eth_submitWork
                         m_submittedShares++;
-                        Logger.LogToConsole(string.Format("Share found: " + m_rigName + ". [{0}] ", m_submittedShares));
+                        Logger.LogToConsole(string.Format("Share found: " + m_displayName + " [{0}] ", m_submittedShares));
                         break;
 
                     case 6: //eth_submitHashrate
                         if (m_debug)
                         {
                             long hashrate = Convert.ToInt64(obj.@params[0], 16); ;
-                            Logger.LogToConsole(string.Format("Hashrate reported by {0}: {1}", m_rigName, hashrate.ToString("#,##0,Mh/s").Replace(",", "."))); ;
+                            Logger.LogToConsole(string.Format("Hashrate reported by {0}: {1}", m_displayName, hashrate.ToString("#,##0,Mh/s").Replace(",", "."))); ;
                         }
                         break;
 
@@ -280,6 +327,7 @@ namespace MinerProxy
             }
             catch (Exception ex)
             {
+                madeChanges = false;    //make sure we don't pass an empty newBuffer to the server
                 Logger.LogToConsole(ex.Message);
                 if (m_debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length));
             }
