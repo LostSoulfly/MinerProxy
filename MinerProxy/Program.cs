@@ -98,6 +98,25 @@ namespace MinerProxy
                         Console.WriteLine("Unable to load settings: " + ex.Message);
                         return;
                     }
+                } else
+                {
+                    Console.WriteLine("No settings.json found! Generating generic one..");
+
+                    settings.allowedAddresses.Add("127.0.0.1");
+                    settings.allowedAddresses.Add("127.0.0.2");
+                    settings.debug = false;
+                    settings.log = false;
+                    settings.localPort = 9000;
+                    settings.remotePort = 4444;
+                    settings.remoteHost = "us1.ethermine.org";
+                    settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MineProxy";
+                    settings.identifyDevFee = true;
+
+                    File.WriteAllText("settings.json",JsonConvert.SerializeObject(settings, Formatting.Indented));
+
+                    Console.WriteLine("Edit the new settings.json file and don't forget to change the wallet address!");
+                    Console.ReadKey();
+                    return;
                 }
             }
             
