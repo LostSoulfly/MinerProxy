@@ -38,6 +38,7 @@ namespace MinerProxy
                     settings.localPort = Convert.ToInt32(args[0]);
                     settings.remoteHost = args[1];
                     settings.remotePort = Convert.ToInt32(args[2]);
+                    settings.allowedAddresses.Add(args[3]);
                     settings.walletAddress = args[4];
                     settings.replaceRigName = Convert.ToBoolean(args[5]);
                     settings.log = Convert.ToBoolean(args[6]);
@@ -123,6 +124,7 @@ namespace MinerProxy
 
             Console.Title = string.Concat("MinerProxy : ", settings.remoteHost, ':', settings.remotePort);
             Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.localPort, listener.LocalEndPoint));
+            Logger.LogToConsole("Accepting connections from: " + string.Join(", ", settings.allowedAddresses));
 
             string key;
 
@@ -174,7 +176,9 @@ namespace MinerProxy
 
                 string remoteAddress = ((IPEndPoint)socket.RemoteEndPoint).Address.ToString();
 
+                if (!settings.allowedAddresses.Contains("0.0.0.0"))
                 {
+                    if (!settings.allowedAddresses.Contains(remoteAddress))
                     {
                         Logger.LogToConsole("Remote host " + remoteAddress + " not allowed; ignoring.");
 
