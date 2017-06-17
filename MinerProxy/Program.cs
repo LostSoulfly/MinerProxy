@@ -109,7 +109,7 @@ namespace MinerProxy
                     settings.localPort = 9000;
                     settings.remotePort = 4444;
                     settings.remoteHost = "us1.ethermine.org";
-                    settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MineProxy";
+                    settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";
                     settings.identifyDevFee = true;
 
                     File.WriteAllText("settings.json",JsonConvert.SerializeObject(settings, Formatting.Indented));
