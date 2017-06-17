@@ -17,7 +17,7 @@ namespace MinerProxy
         private static int localPort;
         private static string remoteHost;
         private static int remotePort;
-        private static bool log;
+        public static bool log;
         private static bool debug;
         private static bool replaceRigName;
         private static string walletAddress;
