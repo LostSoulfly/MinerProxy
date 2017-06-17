@@ -24,6 +24,13 @@ namespace MinerProxy
 
         static void Main(string[] args)
         {
+
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            Version version = assembly.GetName().Version;
+
+            Console.WriteLine(Logger.asciiLogo + version);
+            Console.WriteLine(Logger.credits + '\n');
+
             if (args.Length < 6 && args.Length > 0) //check if they're using command args
             {
                 Console.WriteLine("Usage : MinerProxy.exe <local port> <remote host> <remote port> <Allowed IP> <Your Wallet Address> <Identify DevFee> <Log to file> <debug>");
