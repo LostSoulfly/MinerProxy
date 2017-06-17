@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Text;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace MinerProxy
@@ -55,8 +57,18 @@ namespace MinerProxy
                 return;
             }
 
+            //Split the buffer on \n, and send the data forward one line at a time.
+            //If it's proper JSON, this shouldn't pose any issues. However, it can no longer be used as a generic TCP Proxy :p
+            //If you have an ideas to increase the performance of this, please submit a PR! I'm sure there is a slight performance impact converting from and back to bytes.
             if (OnDataReceived != null)
-                OnDataReceived(m_buffer,size);
+            {
+                var lines = Encoding.UTF8.GetString(m_buffer, 0, size).Split('\n'); 
+                for (int index = 0; index < lines.Length; index++)
+                {
+                    if (lines[index].Length > 0)
+                        OnDataReceived(Encoding.UTF8.GetBytes(lines[index] + '\n'), lines[index].Length + 1);   //Claymore expects a newline at the end, we need to add it back in
+                }
+            }
 
             Receive();
             
