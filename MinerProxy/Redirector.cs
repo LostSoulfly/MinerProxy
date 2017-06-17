@@ -145,7 +145,7 @@ namespace MinerProxy
 
                             case 4:
                                 m_acceptedShares++;
-                                Logger.LogToConsole(string.Format("Share accepted: " + m_displayName + ". [{0}] ", m_acceptedShares));
+                                Logger.LogToConsole(string.Format("Share accepted: " + m_displayName + " [{0}] ", m_acceptedShares));
                                 break;
 
                             case 6:
@@ -188,9 +188,10 @@ namespace MinerProxy
                         catch (Exception ex3)
                         {
                             if (m_debug)
+                            {
                                 Logger.LogToConsole(ex3.ToString());
                                 Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length));
-
+                            }
                         }
                     }
                 }
