@@ -15,5 +15,6 @@ namespace MinerProxy
         public bool debug { get; set; }
         public bool replaceRigName { get; set; }
         public string walletAddress { get; set; }
+        public List<string> allowedAddresses = new List<string>();
     }
 }
