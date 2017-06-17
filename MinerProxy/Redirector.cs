@@ -217,6 +217,7 @@ namespace MinerProxy
                             if (m_replacedWallet != m_proxyWallet)
                                 m_rigName = "DevFee";
                             
+                            //This causes a strange issue.. Claymore reports Worker name as eth1.0? This causes us to not rename to DevFee.
                             if (obj.worker == null)
                             {
                                 //if rigName exists, add the rigname to the new wallet, else just use wallet
