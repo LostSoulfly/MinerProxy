@@ -47,7 +47,7 @@ namespace MinerProxy
                     settings.remotePort = Convert.ToInt32(args[2]);
                     settings.allowedAddresses.Add(args[3]);
                     settings.walletAddress = args[4];
-                    settings.replaceRigName = Convert.ToBoolean(args[5]);
+                    settings.identifyDevFee = Convert.ToBoolean(args[5]);
                     settings.log = Convert.ToBoolean(args[6]);
                     settings.debug = Convert.ToBoolean(args[7]);
 
@@ -160,7 +160,6 @@ namespace MinerProxy
                         case "Q":
                             Console.WriteLine("Shutting down..");
                             return;
-                            break;
                     }
                 }
             }
@@ -168,9 +167,12 @@ namespace MinerProxy
 
         private static void listenerStart()
         {
-            allDone.Reset();
-            listener.BeginAccept(new AsyncCallback(AcceptCallback), null);
-            allDone.WaitOne();
+            while (true)
+            {
+                allDone.Reset();
+                listener.BeginAccept(new AsyncCallback(AcceptCallback), null);
+                allDone.WaitOne();
+            }
         }
 
         private static void AcceptCallback(IAsyncResult iar)

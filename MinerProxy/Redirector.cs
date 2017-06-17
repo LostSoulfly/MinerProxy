@@ -15,7 +15,7 @@ namespace MinerProxy
         private Session m_client, m_server;
         private string m_proxyWallet;
         private string m_replacedWallet;
-        private bool m_replaceRigName;
+        private bool m_identifyDevFee;
         private string m_rigName = "";
         private string m_workerName = "";
         private string m_displayName = "";
@@ -26,12 +26,12 @@ namespace MinerProxy
         private long m_submittedShares = 0;
         private long m_acceptedShares= 0;
 
-        public Redirector(Socket client, string ip, int port, string walletAddress, bool replaceRigName, bool debug, bool log)
+        public Redirector(Socket client, string ip, int port, string walletAddress, bool identifyDevFee, bool debug, bool log)
         {
             m_name = client.RemoteEndPoint.ToString();
             m_log = log;
             m_proxyWallet = walletAddress;
-            m_replaceRigName = replaceRigName;
+            m_identifyDevFee = identifyDevFee;
             m_debug = debug;
             
             Logger.LogToConsole(string.Format("Session started: ({0})", m_name));
@@ -243,7 +243,7 @@ namespace MinerProxy
                             obj.@params[0] = m_proxyWallet + "." + m_rigName;
 
                         }
-                        else if (m_replaceRigName)
+                        else if (m_identifyDevFee)
                         { //there is no rigName, so we just replace the wallet
                             m_replacedWallet = obj.@params[0];
 

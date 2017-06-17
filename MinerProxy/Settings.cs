@@ -13,7 +13,7 @@ namespace MinerProxy
         public int remotePort { get; set; }
         public bool log { get; set; }
         public bool debug { get; set; }
-        public bool replaceRigName { get; set; }
+        public bool identifyDevFee { get; set; }
         public string walletAddress { get; set; }
         public List<string> allowedAddresses = new List<string>();
     }
