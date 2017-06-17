@@ -131,7 +131,7 @@ namespace MinerProxy
             if (settings.debug)
                 Logger.LogToConsole("Debug enabled");
 
-            if (settings.replaceRigName)
+            if (settings.identifyDevFee)
                 Logger.LogToConsole("Showing DevFee mining as 'DevFee' rigName");
 
             Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress);
@@ -213,7 +213,7 @@ namespace MinerProxy
                         return; //if the address supplied isn't allowed, just retrun and keep listening.
                     }
                 }
-                new Redirector(socket, settings.remoteHost, settings.remotePort, settings.walletAddress, settings.replaceRigName, settings.debug, settings.log);
+                new Redirector(socket, settings.remoteHost, settings.remotePort, settings.walletAddress, settings.identifyDevFee, settings.debug, settings.log);
             }
             catch (SocketException se)
             {
