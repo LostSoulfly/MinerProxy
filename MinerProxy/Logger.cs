@@ -17,6 +17,8 @@ namespace MinerProxy
         public static string credits = "Programmed by LostSoulfly | Modified by Samut";
 
         public static string logFileName;
+        public static readonly object ConsoleColorLock = new object();
+        public static readonly object ConsoleBlockLock = new object();
 
         public static void MinerProxyHeader()
         {
@@ -27,10 +29,21 @@ namespace MinerProxy
             Console.WriteLine(credits + '\n');
         }
 
-        public static void LogToConsole(string msg, string m_endpoint = "NONE")
+        public static void LogToConsole(string msg, string m_endpoint = "NONE", ConsoleColor color = ConsoleColor.White)
         {
-            Console.WriteLine("[{0}] {1}: {2}", m_endpoint, DateTime.Now.ToLongTimeString(), msg);
-
+            lock (ConsoleColorLock)
+            {
+                Console.ForegroundColor = color;
+                if (Program.settings.showEndpointInConsole)
+                {
+                    Console.WriteLine("[{0}] {1}: {2}", m_endpoint, DateTime.Now.ToLongTimeString(), msg);
+                }
+                else
+                {
+                    Console.WriteLine("{0}: {1}", DateTime.Now.ToLongTimeString(), msg);
+                }
+                Console.ResetColor();
+            }
 
             if (Program.settings.log)
             {
