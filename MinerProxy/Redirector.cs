@@ -21,16 +21,50 @@ namespace MinerProxy
         private bool m_alive;
         private long m_submittedShares = 0;
         private long m_acceptedShares= 0;
+        private long m_hashRate;
+        private DateTime m_connectionStartTime;
+        private Timer m_statusUpdateTimer;
+        
+        private void OnStatusUpdate(object source, ElapsedEventArgs e)
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
 
+            DateTime timeNow = DateTime.Now;
+            TimeSpan timeSpan = (timeNow - m_connectionStartTime);
+            double hours = timeSpan.TotalHours;
+            double minutes = timeSpan.TotalMinutes;
+            double sharesPerMinute = (m_submittedShares / minutes);
+            double sharesPerMinuteTruncated = Math.Truncate(sharesPerMinute * 100) / 100;
+            double sharesPerHour = (m_submittedShares / hours);
+            double sharesPerHourTruncated = Math.Truncate(sharesPerHour * 100) / 100;
+
+            Logger.LogToConsole(string.Format(m_rigName + "'s status update: "), m_endpoint);
+            Logger.LogToConsole(string.Format("Hashrate: {0}", m_hashRate.ToString("#,##0,Mh/s").Replace(",", ".")), m_endpoint);
+            Logger.LogToConsole(string.Format("Found shares: {0}", m_submittedShares), m_endpoint);
+            Logger.LogToConsole(string.Format("Accepted shares: {0}", m_acceptedShares), m_endpoint);
+            Logger.LogToConsole(string.Format("Rejected shares: {0}", m_rejectedShares),  m_endpoint);
+            Logger.LogToConsole(string.Format("Time connected: {0}", timeSpan.ToString("hh\\:mm")),  m_endpoint);
+            Logger.LogToConsole(string.Format("Shares per minute: {0}", string.Format("{0:N2}", sharesPerMinuteTruncated)),  m_endpoint);
+            Logger.LogToConsole(string.Format("Shares per hour: {0}", string.Format("{0:N2}", sharesPerHourTruncated)),  m_endpoint);
+
+            Console.ResetColor();
+        }
+        
         public Redirector(Socket client, string ip, int port)
         {
             m_name = client.RemoteEndPoint.ToString();
+            m_connectionStartTime = DateTime.Now;
+
+            m_statusUpdateTimer = new Timer();
+            m_statusUpdateTimer.Elapsed += new ElapsedEventHandler(OnStatusUpdate);
+            m_statusUpdateTimer.Interval = 60000;
+            m_statusUpdateTimer.Enabled = true;
             
             Logger.LogToConsole(string.Format("Session started: ({0})", m_name));
 
-                int index = m_name.IndexOf(":");
-                m_endpoint = m_name.Substring(0, index);
-                m_endpoint = m_endpoint + "_" + m_name.Substring(index + 1);
+            int index = m_name.IndexOf(":");
+            m_endpoint = m_name.Substring(0, index);
+            m_endpoint = m_endpoint + "_" + m_name.Substring(index + 1);
 
             m_alive = false;
             
