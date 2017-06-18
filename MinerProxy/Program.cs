@@ -82,7 +82,7 @@ namespace MinerProxy
 
                         case "S":
                             settings.showRigStats = !settings.showRigStats;
-                            Logger.LogToConsole((settings.showRigStats) ? "RigStats disabled" : "RigStats enabled");
+                            Logger.LogToConsole((settings.showRigStats) ? "RigStats enabled" : "RigStats disabled");
                             break;
 
                         case "L":
