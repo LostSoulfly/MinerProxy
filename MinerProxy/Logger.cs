@@ -33,7 +33,7 @@ namespace MinerProxy
         {
             lock (ConsoleColorLock)
             {
-                Console.ForegroundColor = color;
+                if (Program.settings.colorizeConsole) Console.ForegroundColor = color;
                 if (Program.settings.showEndpointInConsole)
                 {
                     Console.WriteLine("[{0}] {1}: {2}", m_endpoint, DateTime.Now.ToLongTimeString(), msg);
@@ -42,7 +42,7 @@ namespace MinerProxy
                 {
                     Console.WriteLine("{0}: {1}", DateTime.Now.ToLongTimeString(), msg);
                 }
-                Console.ResetColor();
+                if (Program.settings.colorizeConsole) Console.ResetColor();
             }
 
             if (Program.settings.log)

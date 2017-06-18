@@ -17,6 +17,7 @@ namespace MinerProxy
         public bool showRigStats { get; set; }
         public int rigStatsIntervalSeconds { get; set; }
         public string walletAddress { get; set; }
+        public bool colorizeConsole { get; set; }
         internal string settingsFile { get; set; }
         public List<string> allowedAddresses = new List<string>();
 
@@ -85,6 +86,7 @@ namespace MinerProxy
                 settings.showEndpointInConsole = true;
                 settings.rigStatsIntervalSeconds = 60;
                 settings.showRigStats = true;
+                settings.colorizeConsole = true;
 
                 writeSettings(settingsJson, settings);
 
