@@ -90,6 +90,7 @@ namespace MinerProxy
                 writeSettings(settingsJson, settings);
 
                 Console.WriteLine("Edit the new {0} file and don't forget to change the wallet address!", settingsJson);
+                Console.Write("Press any key to exit..");
                 Console.ReadKey();
                 System.Environment.Exit(1);
             }
@@ -126,6 +127,8 @@ namespace MinerProxy
             else if (args.Length >= 2) //if they are, and the args match the 6 we're looking for..
             {
                 Console.WriteLine("Command arguments are no longer accepted; pass a JSON file instead.");
+                Console.Write("Press any key to exit..");
+                Console.ReadKey();
                 System.Environment.Exit(1);
             }
             else //there were no args, so we can check for a settings.json file
