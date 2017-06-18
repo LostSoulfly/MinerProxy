@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace MinerProxy
 {
@@ -70,7 +70,7 @@ namespace MinerProxy
             }
             else
             {
-                Console.WriteLine("No {0} found! Generating generic one..", settingsJson);
+                Console.WriteLine("No {0} found! Generating generic one", settingsJson);
 
                 settings.allowedAddresses.Add("127.0.0.1");
                 settings.allowedAddresses.Add("127.0.0.2");

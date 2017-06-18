@@ -6,6 +6,7 @@ using System.Threading;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+
 //try to move the logging blocking collection into this class
 //then just initialize it once and have every thread add to it, instead of making a new thread
 //for each logger for each session
@@ -14,9 +15,8 @@ namespace MinerProxy
 {
     internal sealed class Program
     {
-
         public static Settings settings;
-
+        
         public static BlockingCollection<LogMessage> _logMessages = new BlockingCollection<LogMessage>();
 
         private static Socket listener;
@@ -25,21 +25,19 @@ namespace MinerProxy
         static void Main(string[] args)
         {
 
-            // Display the header art and version information
             Logger.MinerProxyHeader();
 
             // Load and process settings in the Settings class
             Settings.ProcessArgs(args, out settings);
-            
 
             AppDomain.CurrentDomain.UnhandledException += (s, e) => File.WriteAllText("Exceptions.txt", e.ExceptionObject.ToString());
 
+            Logger.logFileName = DateTime.Now.ToString("s").Replace(":", ".") + "_log";
             CancellationTokenSource logTokenSource = new CancellationTokenSource();
             CancellationToken logToken = logTokenSource.Token;
             var logQueue = new Task(() => ProcessLogQueue(logToken), TaskCreationOptions.LongRunning);
             if (settings.log) //if logging enabled, let's start the logging queue
                 logQueue.Start();
-            
 
             if (settings.debug)
                 Logger.LogToConsole("Debug enabled");
@@ -49,6 +47,8 @@ namespace MinerProxy
 
             Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress);
 
+            
+
             try
             {
                 listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -56,22 +56,20 @@ namespace MinerProxy
                 listener.Listen(100);
             } catch (Exception ex)
             {
-                Console.WriteLine("Error: {0}", ex.Message);
+                Logger.LogToConsole("Error: {0}", ex.Message);
                 return;
             }
+
             allDone = new ManualResetEvent(false);
 
             Console.Title = string.Concat("MinerProxy : ", settings.remoteHost, ':', settings.remotePort);
             Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.localPort, listener.LocalEndPoint));
             Logger.LogToConsole("Accepting connections from: " + string.Join(", ", settings.allowedAddresses));
 
-            
 
-            // We can accept console input, but we need to set up the listener on its own thread
-            // otherwise we can't listen for key events in the console
             var listenerTask = new Task(() => listenerStart(), TaskCreationOptions.LongRunning);
             listenerTask.Start();
-
+            
             string key;
 
             while (true)
@@ -79,25 +77,15 @@ namespace MinerProxy
                 if (Console.KeyAvailable)
                 {
                     key = Console.ReadKey(true).Key.ToString();
-                    
+
                     switch (key)
                     {
-                        case "S":
-                            //output current stats, like hashrate and shares and uptime
-                            break;
-
-                        case "C":
-                            //output current connection status
-                            //number of users, their addresses, and their rigNames
-                            break;
-
                         case "L":
                             settings.log = !settings.log;
                             Logger.LogToConsole((settings.log) ? "Logging enabled" : "Logging disabled");
 
                             if (settings.log)
-                            {   //reuse old log tokens and tasks
-                               //_logMessages = new BlockingCollection<LogMessage>();
+                            {
                                 logTokenSource = new CancellationTokenSource();
                                 logToken = logTokenSource.Token;
                                 logQueue = new Task(() => ProcessLogQueue(logToken), TaskCreationOptions.LongRunning);
@@ -105,10 +93,9 @@ namespace MinerProxy
                             }
                             else
                             {
-                                logTokenSource.CancelAfter(TimeSpan.FromSeconds(1));    //Give the logger a second to finish writing
+                                logTokenSource.CancelAfter(TimeSpan.FromSeconds(1));
                             }
                             break;
-
 
                         case "D":
                             settings.debug = !settings.debug;
@@ -137,7 +124,7 @@ namespace MinerProxy
         private static void AcceptCallback(IAsyncResult iar)
         {
             allDone.Set();
-            
+
             try
             {
                 var socket = listener.EndAccept(iar);
@@ -150,14 +137,14 @@ namespace MinerProxy
                     {
                         Logger.LogToConsole("Remote host " + remoteAddress + " not allowed; ignoring");
 
-                        return; //if the address supplied isn't allowed, just retrun and keep listening.
+                        return; //if the address supplied isn't allowed, just return and keep listening.
                     }
                 }
                 new Redirector(socket, settings.remoteHost, settings.remotePort);
             }
             catch (SocketException se)
             {
-                Logger.LogToConsole(string.Format("Accept failed with {0}", se.ErrorCode)); 
+                Logger.LogToConsole(string.Format("Accept failed with {0}", se.ErrorCode));
             }
         }
 
@@ -170,11 +157,13 @@ namespace MinerProxy
                 if (!token.IsCancellationRequested)
                 {
                     File.AppendAllText(msg.Filepath, msg.Text + "\r\n");
-                } else
+                }
+                else
                 {
                     return;
                 }
             }
+
         }
     }
 }
