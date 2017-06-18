@@ -197,7 +197,39 @@ namespace MinerProxy
         }
         private void OnClientPacket(byte[] buffer, int length)
         {
-            m_coinHandler.OnEthClientPacket(buffer, length);
+            switch (Program.settings.minedCoin)
+            {
+                case "ETC":
+                case "ETH":
+                    m_coinHandler.OnEthClientPacket(buffer, length);
+                    break;
+
+                case "SC":
+
+                    break;
+
+                case "ZEC":
+                    break;
+
+                case "PASC":
+                    break;
+
+                case "DCR":
+                    break;
+
+                case "LBRY":
+                    break;
+
+                case "UBIQ":
+                case "UBQ":
+                    break;
+
+                case "CRYPTONOTE":
+                case "CRY":
+                    break;
+
+            }
+            
 
             if (Program.settings.log)
              Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " >---->\r\n" + Encoding.UTF8.GetString(buffer,0,length)));
