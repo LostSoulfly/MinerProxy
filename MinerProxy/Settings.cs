@@ -18,6 +18,7 @@ namespace MinerProxy
         public int rigStatsIntervalSeconds { get; set; }
         public string walletAddress { get; set; }
         public bool colorizeConsole { get; set; }
+        public string minedCoin { get; set; }
         internal string settingsFile { get; set; }
         public List<string> allowedAddresses = new List<string>();
 
@@ -34,30 +35,29 @@ namespace MinerProxy
                     settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(settingsJson));
                     if (settings.localPort == 0)
                     {
-                        Logger.LogToConsole("Local port missing!", color: ConsoleColor.Red);
-                        System.Environment.Exit(1);
+                        IncorrectSettingsMessage("Local port missing!", settings, settingsJson);
                     }
 
-                    if (settings.remoteHost.Length == 0)
+                    if (string.IsNullOrEmpty(settings.remoteHost))
                     {
-                        Logger.LogToConsole("Remote host missing!", color: ConsoleColor.Red);
-                        System.Environment.Exit(1);
+                        IncorrectSettingsMessage("Remote host missing!", settings, settingsJson);
                     }
 
                     if (settings.remotePort == 0)
                     {
-                        Logger.LogToConsole("Remote port missing!", color: ConsoleColor.Red);
-                        System.Environment.Exit(1);
+                        IncorrectSettingsMessage("Remote port missing!", settings, settingsJson);
                     }
                     if (settings.allowedAddresses.Count == 0)
                     {
-                        Logger.LogToConsole("No allowed IP addresses!", color: ConsoleColor.Red);
-                        System.Environment.Exit(1);
+                        IncorrectSettingsMessage("No allowed addresses!", settings, settingsJson);
                     }
-                    if (settings.walletAddress.Length == 0)
+                    if (string.IsNullOrEmpty(settings.walletAddress))
                     {
-                        Logger.LogToConsole("Wallet address missing!", color: ConsoleColor.Red);
-                        System.Environment.Exit(1);
+                        IncorrectSettingsMessage("Wallet address missing!", settings, settingsJson);
+                    }
+                    if ((string.IsNullOrEmpty(settings.minedCoin)) | !ValidateCoin(settings.minedCoin))
+                    {
+                        IncorrectSettingsMessage(string.Format("Unknown coin specified {0}", settings.minedCoin), settings, settingsJson);
                     }
                     settings.settingsFile = settingsJson;
                     return;
@@ -65,7 +65,7 @@ namespace MinerProxy
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Unable to load settings: " + ex.Message);
+                    IncorrectSettingsMessage(string.Format("Unable to load {0}", ex.Message), settings);
                     System.Environment.Exit(1);
                 }
             }
@@ -73,19 +73,7 @@ namespace MinerProxy
             {
                 Console.WriteLine("No {0} found! Generating generic one", settingsJson);
 
-                settings.allowedAddresses.Add("127.0.0.1");
-                settings.allowedAddresses.Add("127.0.0.2");
-                settings.debug = false;
-                settings.log = false;
-                settings.localPort = 9000;
-                settings.remotePort = 4444;
-                settings.remoteHost = "us1.ethermine.org";
-                settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";
-                settings.identifyDevFee = true;
-                settings.showEndpointInConsole = true;
-                settings.rigStatsIntervalSeconds = 60;
-                settings.showRigStats = true;
-                settings.colorizeConsole = true;
+                settings = GetGenericSettings(settings);
 
                 writeSettings(settingsJson, settings);
 
@@ -106,6 +94,44 @@ namespace MinerProxy
             {
                 Console.WriteLine("Save settings error: {0}", ex.Message);
             }
+        }
+
+        public static void IncorrectSettingsMessage(string error, Settings settings, string settingsJson = "Settings.json")
+        {
+            settings.settingsFile = settingsJson;
+
+            ConsoleColor color = ConsoleColor.Red;
+            Logger.LogToConsole("Unable to load settings: " + error, "ERROR", color);
+            Logger.LogToConsole("Would you like to update the current JSON to the newest settings? Y/N", "ERROR", color);
+            string key = Console.ReadKey().Key.ToString();
+            if (key == "Y")
+            {
+                writeSettings(settings.settingsFile, GetGenericSettings(settings));
+            }
+            System.Environment.Exit(1);
+        }
+
+        public static Settings GetGenericSettings(Settings settings)
+        {
+            if (settings.allowedAddresses.Count == 0)
+            {
+                settings.allowedAddresses.Add("127.0.0.1");
+                settings.allowedAddresses.Add("0.0.0.0");
+            }
+            if (settings.debug != true) settings.debug = false;
+            if (settings.log != true) settings.log = false;
+            if (settings.localPort == 0) settings.localPort = 9000;
+            if (settings.remotePort == 0) settings.remotePort = 4444;
+            if (string.IsNullOrEmpty(settings.remoteHost)) settings.remoteHost = "us1.ethermine.org";
+            if (string.IsNullOrEmpty(settings.walletAddress)) settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";
+            settings.identifyDevFee = true;
+            if (settings.showEndpointInConsole != false) settings.showEndpointInConsole = true;
+            if (settings.rigStatsIntervalSeconds == 0) settings.rigStatsIntervalSeconds = 60;
+            settings.showRigStats = true;
+            settings.colorizeConsole = true;
+            if (string.IsNullOrEmpty(settings.minedCoin)) settings.minedCoin = "ETH";
+
+            return settings;
         }
 
         public static void ProcessArgs(string[] args, out Settings settings)
@@ -136,6 +162,45 @@ namespace MinerProxy
                 LoadSettings(out settings);
                 return;
             }
+        }
+
+        public static bool ValidateCoin(string coin) //Pass the string of a coin, convert to uppercase, and return true if it's valid, else false
+        {
+            coin = coin.ToUpper();
+            switch (coin)
+            {
+                case "ETC":
+                case "ETH":
+                    return true;
+
+                case "SIA":
+                case "SC":
+                    return true;
+
+                case "ZEC":
+                    return true;
+
+                case "PASC":
+                    return true;
+
+                case "DCR":
+                    return true;
+
+                case "LBRY":
+                    return true;
+
+                case "UBIQ":
+                case "UBQ":
+                    return true;
+
+                case "CRYPTONOTE":
+                case "CRY":
+                    return true;
+
+                default:
+                    return false;
+            }
+
         }
     }
 }
