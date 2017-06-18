@@ -41,7 +41,7 @@ namespace MinerProxy
             {
                 try
                 {
-                    Logger.LogToConsole("Command arguments specified; not loading settings.json.");
+                    Logger.LogToConsole("Command arguments specified; not loading settings.json");
                     settings.localPort = Convert.ToInt32(args[0]);
                     settings.remoteHost = args[1];
                     settings.remotePort = Convert.ToInt32(args[2]);
@@ -87,6 +87,11 @@ namespace MinerProxy
                             Logger.LogToConsole("Remote port missing!");
                             return;
                         }
+                        if (settings.allowedAddresses.Count == 0)
+                        {
+                            Logger.LogToConsole("No allowed IP addresses!");
+                            return;
+                        }
                         if (settings.walletAddress.Length == 0)
                         {
                             Logger.LogToConsole("Wallet address missing!");
@@ -101,6 +106,7 @@ namespace MinerProxy
                 } else
                 {
                     Console.WriteLine("No settings.json found! Generating generic one..");
+                    Console.WriteLine("No settings.json found! Generating generic one");
 
                     settings.allowedAddresses.Add("127.0.0.1");
                     settings.allowedAddresses.Add("127.0.0.2");
@@ -123,10 +129,12 @@ namespace MinerProxy
 
             AppDomain.CurrentDomain.UnhandledException += (s, e) => File.WriteAllText("Exceptions.txt", e.ExceptionObject.ToString());
 
-            if (settings.log) { //if logging enabled, let's start the logging queue
-                var task = new Task(() => ProcessLogQueue(), TaskCreationOptions.LongRunning);
-                task.Start();
-            }
+            CancellationTokenSource logTokenSource = new CancellationTokenSource();
+            CancellationToken logToken = logTokenSource.Token;
+            var logQueue = new Task(() => ProcessLogQueue(logToken), TaskCreationOptions.LongRunning);
+            if (settings.log) //if logging enabled, let's start the logging queue
+                logQueue.Start();
+            
 
             if (settings.debug)
                 Logger.LogToConsole("Debug enabled");
@@ -152,12 +160,14 @@ namespace MinerProxy
             Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.localPort, listener.LocalEndPoint));
             Logger.LogToConsole("Accepting connections from: " + string.Join(", ", settings.allowedAddresses));
 
-            string key;
+            
 
             // We can accept console input, but we need to set up the listener on its own thread
             // otherwise we can't listen for key events in the console
             var listenerTask = new Task(() => listenerStart(), TaskCreationOptions.LongRunning);
             listenerTask.Start();
+
+            string key;
 
             while (true)
             {
@@ -176,8 +186,33 @@ namespace MinerProxy
                             //number of users, their addresses, and their rigNames
                             break;
 
+                        case "L":
+                            settings.log = !settings.log;
+                            Logger.LogToConsole((settings.log) ? "Logging enabled" : "Logging disabled");
+
+                            if (settings.log)
+                            {   //reuse old log tokens and tasks
+                               //_logMessages = new BlockingCollection<LogMessage>();
+                                logTokenSource = new CancellationTokenSource();
+                                logToken = logTokenSource.Token;
+                                logQueue = new Task(() => ProcessLogQueue(logToken), TaskCreationOptions.LongRunning);
+                                logQueue.Start();
+                            }
+                            else
+                            {
+                                logTokenSource.CancelAfter(TimeSpan.FromSeconds(1));    //Give the logger a second to finish writing
+                            }
+                            break;
+
+
+                        case "D":
+                            settings.debug = !settings.debug;
+                            Logger.LogToConsole((settings.debug) ? "Debug enabled" : "Debug disabled");
+                            break;
+
                         case "Q":
-                            Console.WriteLine("Shutting down..");
+                            Console.WriteLine("Shutting down");
+                            Console.ReadKey();
                             return;
                     }
                 }
@@ -208,12 +243,12 @@ namespace MinerProxy
                 {
                     if (!settings.allowedAddresses.Contains(remoteAddress))
                     {
-                        Logger.LogToConsole("Remote host " + remoteAddress + " not allowed; ignoring.");
+                        Logger.LogToConsole("Remote host " + remoteAddress + " not allowed; ignoring");
 
                         return; //if the address supplied isn't allowed, just retrun and keep listening.
                     }
                 }
-                new Redirector(socket, settings.remoteHost, settings.remotePort, settings.walletAddress, settings.identifyDevFee, settings.debug, settings.log);
+                new Redirector(socket, settings.remoteHost, settings.remotePort, settings.walletAddress, settings.identifyDevFee);
             }
             catch (SocketException se)
             {
@@ -221,16 +256,20 @@ namespace MinerProxy
             }
         }
 
-        private static void ProcessLogQueue()
+        private static void ProcessLogQueue(CancellationToken token)
         {
-            if (settings.debug) Logger.LogToConsole("Logging queue started.");
+            if (settings.debug) Logger.LogToConsole("Logging queue started");
 
             foreach (var msg in _logMessages.GetConsumingEnumerable())
             {
-
-                File.AppendAllText(msg.Filepath, msg.Text + "\r\n");
+                if (!token.IsCancellationRequested)
+                {
+                    File.AppendAllText(msg.Filepath, msg.Text + "\r\n");
+                } else
+                {
+                    return;
+                }
             }
-
         }
     }
 }

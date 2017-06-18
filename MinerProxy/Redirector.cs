@@ -20,23 +20,19 @@ namespace MinerProxy
         private string m_workerName = "";
         private string m_displayName = "";
         private bool m_noRigName;
-        private bool m_debug;
         private bool m_alive;
-        private bool m_log;
         private long m_submittedShares = 0;
         private long m_acceptedShares= 0;
 
-        public Redirector(Socket client, string ip, int port, string walletAddress, bool identifyDevFee, bool debug, bool log)
+        public Redirector(Socket client, string ip, int port, string walletAddress, bool identifyDevFee)
         {
             m_name = client.RemoteEndPoint.ToString();
-            m_log = log;
             m_proxyWallet = walletAddress;
             m_identifyDevFee = identifyDevFee;
-            m_debug = debug;
             
             Logger.LogToConsole(string.Format("Session started: ({0})", m_name));
 
-            if (m_log)
+            if (Program.settings.log)
             {
                 int index = m_name.IndexOf(":");
                 m_endpoint = m_name.Substring(0, index);
@@ -103,7 +99,7 @@ namespace MinerProxy
                             break;
 
                         default:
-                            if (m_debug)
+                            if (Program.settings.debug)
                             {
                                 Logger.LogToConsole("From Server1 <----<");
                                 Logger.LogToConsole("Unknown ID: " + obj.id);
@@ -149,11 +145,11 @@ namespace MinerProxy
                                 break;
 
                             case 6:
-                                //if (m_debug) Logger.LogToConsole("Hashrate accepted: {0}", obj.result);
+                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Hashrate accepted: {0}", obj.result));
                                 break;
 
                             default:
-                                if (m_debug)
+                                if (Program.settings.debug)
                                 {
                                     Logger.LogToConsole("From Server2 <----<");
                                     Logger.LogToConsole("Unknown ID: " + obj.id);
@@ -187,7 +183,7 @@ namespace MinerProxy
                         }
                         catch (Exception ex3)
                         {
-                            if (m_debug)
+                            if (Program.settings.debug)
                             {
                                 Logger.LogToConsole(ex3.ToString());
                                 Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length));
@@ -200,13 +196,13 @@ namespace MinerProxy
             catch (Exception ex)
             {
                 Logger.LogToConsole(ex.ToString());
-                if (m_debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length));
+                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length));
             }
 
             if (m_alive && m_client.Disposed == false)
                 m_client.Send(buffer, length);
 
-            if (m_log)
+            if (Program.settings.log)
                 Program._logMessages.Add(new LogMessage(m_endpoint + ".txt", DateTime.Now.ToLongTimeString() + " <----<\r\n" + Encoding.UTF8.GetString(buffer,0,length)));
 
         }
@@ -214,7 +210,7 @@ namespace MinerProxy
         {
             OnEthPacket(buffer, length);
 
-            if (m_log)
+            if (Program.settings.log)
                 Program._logMessages.Add(new LogMessage(m_endpoint + ".txt", DateTime.Now.ToLongTimeString() + " >---->\r\n" + Encoding.UTF8.GetString(buffer,0,length)));
         }
 
@@ -275,7 +271,7 @@ namespace MinerProxy
                                 m_displayName = obj.worker;
                                 m_workerName = obj.worker;
                                 obj.@params[0] = m_proxyWallet;
-                                if (m_debug) Logger.LogToConsole(string.Format("Worker: {0}", m_workerName));
+                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Worker: {0}", m_workerName));
                             }
                         }
                         else
@@ -285,18 +281,18 @@ namespace MinerProxy
                             obj.@params[0] = m_proxyWallet;
                         }
                         string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n"; 
-                        //if (m_debug) Logger.LogToConsole("Before: " + Encoding.UTF8.GetString(buffer, 0, length));
+                        //if (Program.settings.debug) Logger.LogToConsole("Before: " + Encoding.UTF8.GetString(buffer, 0, length));
                         Logger.LogToConsole("Old Wallet: " + m_replacedWallet);
                         Logger.LogToConsole("New Wallet: " + obj.@params[0]);
 
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                         newLength = tempBuffer.Length;
 
-                        //if (m_debug) Logger.LogToConsole("After: " + Encoding.UTF8.GetString(newBuffer, 0, newLength));
+                        //if (Program.settings.debug) Logger.LogToConsole("After: " + Encoding.UTF8.GetString(newBuffer, 0, newLength));
                         break;
 
                     case 3: //eth_getWork
-                        //if (m_debug) Logger.LogToConsole("eth_getWork from Client.");
+                        if (Program.settings.debug) Logger.LogToConsole("eth_getWork from Client");
                         break;
 
                     case 4: //eth_submitWork
@@ -305,7 +301,7 @@ namespace MinerProxy
                         break;
 
                     case 6: //eth_submitHashrate
-                        if (m_debug)
+                        if (Program.settings.debug)
                         {
                             long hashrate = Convert.ToInt64(obj.@params[0], 16); ;
                             Logger.LogToConsole(string.Format("Hashrate reported by {0}: {1}", m_displayName, hashrate.ToString("#,##0,Mh/s").Replace(",", "."))); ;
@@ -313,7 +309,7 @@ namespace MinerProxy
                         break;
 
                     default:
-                        if (m_debug)
+                        if (Program.settings.debug)
                         {
                             Logger.LogToConsole("From Client >---->");
                             Logger.LogToConsole("Unknown ID: " + obj.id);
@@ -330,19 +326,19 @@ namespace MinerProxy
             {
                 madeChanges = false;    //make sure we don't pass an empty newBuffer to the server
                 Logger.LogToConsole(ex.Message);
-                if (m_debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length));
+                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length));
             }
 
             if (m_alive && m_server.Disposed == false)
             {
                 if (madeChanges == false)
                 {
-                    //if (m_debug) Logger.LogToConsole("Sending buffer: " + Encoding.UTF8.GetString(buffer, 0, length));
+                    //if (Program.settings.debug) Logger.LogToConsole("Sending buffer: " + Encoding.UTF8.GetString(buffer, 0, length));
                     m_server.Send(buffer, length);
                 }
                 else
                 {
-                    //if (m_debug) Logger.LogToConsole("Sending modified buffer: " + Encoding.UTF8.GetString(newBuffer, 0, newLength));
+                    //if (Program.settings.debug) Logger.LogToConsole("Sending modified buffer: " + Encoding.UTF8.GetString(newBuffer, 0, newLength));
                     m_server.Send(newBuffer, newLength);
                 }
             }

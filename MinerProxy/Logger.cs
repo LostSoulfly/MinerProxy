@@ -18,7 +18,7 @@ namespace MinerProxy
                                                   __/ |
                                                  |___/ ";
 
-        public static string credits = " Programmed by LostSoulfly | Original code by RajanGrewal.";
+        public static string credits = " Programmed by LostSoulfly | Original code by RajanGrewal";
 
         public static void LogToConsole(string msg)
         {
