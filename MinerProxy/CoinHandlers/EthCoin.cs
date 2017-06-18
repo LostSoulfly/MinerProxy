@@ -152,13 +152,12 @@ namespace MinerProxy.CoinHandlers
             {
                 if (madeChanges == false)
                 {
-                    Logger.LogToConsole("Sending buffer: " + Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint);
+                    //Logger.LogToConsole("Sending buffer: " + Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint);
                     redirector.m_server.Send(buffer, length);
                 }
                 else
                 {
-                    Logger.LogToConsole("Sending old: " + Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint);
-                    Logger.LogToConsole("Sending modified buffer: " + Encoding.UTF8.GetString(newBuffer, 0, newLength), redirector.m_endpoint);
+                    //Logger.LogToConsole("Sending modified buffer: " + Encoding.UTF8.GetString(newBuffer, 0, newLength), redirector.m_endpoint);
                     redirector.m_server.Send(newBuffer, newLength);
                 }
             }
