@@ -72,11 +72,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BufferPool.cs" />
-    <Compile Include="ClientJsonObject.cs" />
+    <Compile Include="CoinHandlers\EthCoin.cs" />
+    <Compile Include="JsonProtocols\SiaProtocol.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="LogMessage.cs" />
+    <Compile Include="CoinHandlers\SiaCoin.cs" />
     <Compile Include="Redirector.cs" />
-    <Compile Include="ServerJsonObject.cs" />
+    <Compile Include="JsonProtocols\EthereumProtocol.cs" />
     <Compile Include="Session.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
