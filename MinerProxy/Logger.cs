@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinerProxy
 {
@@ -18,7 +14,9 @@ namespace MinerProxy
                                                   __/ |
                                                  |___/ ";
 
-        public static string credits = " Programmed by LostSoulfly | Original code by RajanGrewal";
+        public static string credits = "Programmed by LostSoulfly | Modified by Samut";
+
+        public static string logFileName;
 
         public static void MinerProxyHeader()
         {
@@ -29,11 +27,15 @@ namespace MinerProxy
             Console.WriteLine(credits + '\n');
         }
 
-        public static void LogToConsole(string msg)
+        public static void LogToConsole(string msg, string m_endpoint = "NONE")
         {
-            Console.WriteLine("{0}: {1}", DateTime.Now.ToLongTimeString(), msg);
+            Console.WriteLine("[{0}] {1}: {2}", m_endpoint, DateTime.Now.ToLongTimeString(), msg);
+
+
             if (Program.settings.log)
-                Program._logMessages.Add(new LogMessage("console.txt", DateTime.Now.ToLongTimeString() + ": " + msg));
+            {
+               Program._logMessages.Add(new LogMessage(logFileName + ".txt", string.Format("[{0}] {1}: {2}", m_endpoint, DateTime.Now.ToLongTimeString(), msg)));
+            }
         }
     }
 }
