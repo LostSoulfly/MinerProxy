@@ -13,6 +13,9 @@ namespace MinerProxy
         public bool log { get; set; }
         public bool debug { get; set; }
         public bool identifyDevFee { get; set; }
+        public bool showEndpointInConsole { get; set; }
+        public bool showRigStats { get; set; }
+        public int rigStatsIntervalSeconds { get; set; }
         public string walletAddress { get; set; }
         public List<string> allowedAddresses = new List<string>();
 
@@ -78,6 +81,9 @@ namespace MinerProxy
                 settings.remoteHost = "us1.ethermine.org";
                 settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";
                 settings.identifyDevFee = true;
+                settings.showEndpointInConsole = true;
+                settings.rigStatsIntervalSeconds = 60;
+                settings.showRigStats = true;
 
                 File.WriteAllText(settingsJson, JsonConvert.SerializeObject(settings, Formatting.Indented));
 
