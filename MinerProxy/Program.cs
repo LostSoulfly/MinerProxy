@@ -46,8 +46,14 @@ namespace MinerProxy
 
             Logger.LogToConsole("Coin protocol: " + settings.minedCoin);
 
-            Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress);
-
+            if (Program.settings.replaceWallet)
+            {
+                Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress);
+            }
+            else
+            {
+                Logger.LogToConsole("Not replacing Wallets");
+            }
             
 
             try
