@@ -59,6 +59,10 @@ namespace MinerProxy
                     {
                         IncorrectSettingsMessage(string.Format("Unknown coin specified {0}", settings.minedCoin), settings, settingsJson);
                     }
+                    else
+                    {
+                        settings.minedCoin = settings.minedCoin.ToUpper();
+                    }
                     settings.settingsFile = settingsJson;
                     return;
 
