@@ -32,12 +32,9 @@ namespace MinerProxy
             
             Logger.LogToConsole(string.Format("Session started: ({0})", m_name));
 
-            if (Program.settings.log)
-            {
                 int index = m_name.IndexOf(":");
                 m_endpoint = m_name.Substring(0, index);
                 m_endpoint = m_endpoint + "_" + m_name.Substring(index + 1);
-            }
 
             m_alive = false;
             
