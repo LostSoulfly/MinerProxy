@@ -349,17 +349,6 @@ namespace MinerProxy
                         break;
 
                     case 3: //eth_getWork
-                        //if (obj.worker == null || obj.worker == "")
-                        //{
-                            madeChanges = true;
-
-                            obj.worker = m_rigName;
-
-                            string tmpBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
-                            newBuffer = Encoding.UTF8.GetBytes(tmpBuffer);
-                            newLength = tmpBuffer.Length;
-                        //}
-
                         if (Program.settings.debug) Logger.LogToConsole("eth_getWork from Client.",  m_endpoint);
                         break;
 
