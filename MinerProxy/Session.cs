@@ -57,7 +57,6 @@ namespace MinerProxy
                 return;
             }
 
-                //OnDataReceived(m_buffer,size);
             if (OnDataReceived != null)
             {
                 var lines = Encoding.UTF8.GetString(m_buffer, 0, size).Split('\n');
@@ -69,7 +68,6 @@ namespace MinerProxy
             }
 
             Receive();
-            //Thread.Sleep(1); //Hopefully resolves multiple packets being received at one time, causing JSON read errors
         }
 
         public void Send(byte[] buffer,int length)

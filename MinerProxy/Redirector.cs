@@ -148,9 +148,6 @@ namespace MinerProxy
                     {
                         ServerRootObjectBool obj = JsonConvert.DeserializeObject<ServerRootObjectBool>(Encoding.UTF8.GetString(buffer, 0, length));
 
-                        //if (obj.result == false)
-                          //  Logger.LogToConsole("Server Error: " + obj.error,  m_endpoint);
-
                         if ((obj.error != null) && obj.result.Equals(null))
                         {
                             Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), m_displayName, obj.error.code, obj.error.message), m_endpoint);
@@ -338,14 +335,12 @@ namespace MinerProxy
                         }
 
                         string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
-                        //if (m_debug) Logger.LogToConsole("Before: " + Encoding.UTF8.GetString(buffer, 0, length));
                         Logger.LogToConsole("Old Wallet: " + m_replacedWallet,  m_endpoint);
                         Logger.LogToConsole("New Wallet: " + obj.@params[0],  m_endpoint);
 
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                         newLength = tempBuffer.Length;
 
-                        //if (m_debug) Logger.LogToConsole("After: " + Encoding.UTF8.GetString(newBuffer, 0, newLength));
                         break;
 
                     case 3: //eth_getWork
@@ -355,7 +350,6 @@ namespace MinerProxy
                     case 4: //eth_submitWork
                         Console.ForegroundColor = ConsoleColor.Green;
                         m_submittedShares++;
-                        //Logger.LogToConsole(string.Format("Share found: " + m_rigName + ". [{0}] ", m_submittedShares),  m_endpoint);
                         Logger.LogToConsole(string.Format(m_displayName + " found a share. [{0} shares found]", m_submittedShares),  m_endpoint);
                         Console.ResetColor();
                         break;
