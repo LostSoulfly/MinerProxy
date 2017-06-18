@@ -17,7 +17,7 @@ namespace MinerProxy
 
     public class ServerRootObjectBool
     {
-        public int id { get; set; }
+        public int? id { get; set; }
         public string jsonrpc { get; set; }
         public bool? result { get; set; }
         public Error error { get; set; }
@@ -25,7 +25,7 @@ namespace MinerProxy
 
     public class ServerRootObjectError
     {
-        public int id { get; set; }
+        public int? id { get; set; }
         public string jsonrpc { get; set; }
         public bool? result { get; set; }
         public string error { get; set; }
