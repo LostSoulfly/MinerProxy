@@ -137,7 +137,7 @@ namespace MinerProxy
                                 Logger.LogToConsole("E key: Enable/Disable Endpoint prefix on log messages", "HELP", ConsoleColor.Yellow);
                                 Logger.LogToConsole("L key: Enable/Disable logging to file", "HELP", ConsoleColor.Yellow);
                                 Logger.LogToConsole("D key: Enable/Disable debug messages", "HELP", ConsoleColor.Yellow);
-                                Logger.LogToConsole("U key: Update the loaded JSON file with new settings options", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("U key: Update the loaded JSON file with current settings", "HELP", ConsoleColor.Yellow);
                                 Logger.LogToConsole("Q key: Quit MinerProxy", "HELP", ConsoleColor.Yellow);
                             }
                                 break;
