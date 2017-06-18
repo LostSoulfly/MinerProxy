@@ -103,27 +103,10 @@ namespace MinerProxy
                 LoadSettings(out settings, args[0]);    //first supplied argument should be a json file
                 return;
             }
-            else if (args.Length >= 6) //if they are, and the args match the 6 we're looking for..
+            else if (args.Length >= 2) //if they are, and the args match the 6 we're looking for..
             {
-                try
-                {
-                    Logger.LogToConsole("Command arguments specified; not loading settings.json");
-                    settings.localPort = Convert.ToInt32(args[0]);
-                    settings.remoteHost = args[1];
-                    settings.remotePort = Convert.ToInt32(args[2]);
-                    settings.allowedAddresses.Add(args[3]);
-                    settings.walletAddress = args[4];
-                    settings.identifyDevFee = Convert.ToBoolean(args[5]);
-                    settings.log = Convert.ToBoolean(args[6]);
-                    settings.debug = Convert.ToBoolean(args[7]);
-
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogToConsole("Check your command arguments: " + ex.Message);
-                    Console.ReadKey();
-                    System.Environment.Exit(1);
-                }
+                Console.WriteLine("Command arguments are no longer accepted; pass a JSON file instead.");
+                System.Environment.Exit(1);
             }
             else //there were no args, so we can check for a settings.json file
             {
