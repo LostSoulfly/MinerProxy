@@ -182,7 +182,7 @@ namespace MinerProxy
                             case 2:
                                 if (obj.result == true)
                                 {
-                                    Logger.LogToConsole("Stratum Authorization success: " + m_displayName,  m_endpoint, ConsoleColor.DarkGreen);
+                                    Logger.LogToConsole("Stratum Authorization success: " + m_displayName,  m_endpoint, ConsoleColor.Blue);
                                 } else
                                 {
                                     Logger.LogToConsole("eth_SubmitLogin failed!",  m_endpoint, ConsoleColor.Red);
@@ -205,7 +205,7 @@ namespace MinerProxy
                                 break;
 
                             case 6:
-                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Hashrate accepted: {0}", obj.result),  m_endpoint);
+                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Hashrate accepted: {0}", obj.result),  m_endpoint, ConsoleColor.Blue);
                                 break;
 
                             default:
