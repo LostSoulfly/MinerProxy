@@ -20,6 +20,15 @@ namespace MinerProxy
 
         public static string credits = " Programmed by LostSoulfly | Original code by RajanGrewal";
 
+        public static void MinerProxyHeader()
+        {
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            Version version = assembly.GetName().Version;
+
+            Console.WriteLine(asciiLogo + version);
+            Console.WriteLine(credits + '\n');
+        }
+
         public static void LogToConsole(string msg)
         {
             Console.WriteLine("{0}: {1}", DateTime.Now.ToLongTimeString(), msg);

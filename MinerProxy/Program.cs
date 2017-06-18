@@ -15,7 +15,7 @@ namespace MinerProxy
     internal sealed class Program
     {
 
-        public static Settings settings = new Settings();
+        public static Settings settings;
 
         public static BlockingCollection<LogMessage> _logMessages = new BlockingCollection<LogMessage>();
 
@@ -25,106 +25,11 @@ namespace MinerProxy
         static void Main(string[] args)
         {
 
-            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            Version version = assembly.GetName().Version;
+            // Display the header art and version information
+            Logger.MinerProxyHeader();
 
-            Console.WriteLine(Logger.asciiLogo + version);
-            Console.WriteLine(Logger.credits + '\n');
-
-            if (args.Length < 6 && args.Length > 0) //check if they're using command args
-            {
-                Console.WriteLine("Usage : MinerProxy.exe <local port> <remote host> <remote port> <Allowed IP> <Your Wallet Address> <Identify DevFee> <Log to file> <debug>");
-                Console.WriteLine("MinerProxy.exe 9000 us1.ethermine.org 4444 127.0.0.1 0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332 True False False");
-                return;
-            }
-            else if (args.Length >= 6) //if they are, and the args match the 6 we're looking for..
-            {
-                try
-                {
-                    Logger.LogToConsole("Command arguments specified; not loading settings.json");
-                    settings.localPort = Convert.ToInt32(args[0]);
-                    settings.remoteHost = args[1];
-                    settings.remotePort = Convert.ToInt32(args[2]);
-                    settings.allowedAddresses.Add(args[3]);
-                    settings.walletAddress = args[4];
-                    settings.identifyDevFee = Convert.ToBoolean(args[5]);
-                    settings.log = Convert.ToBoolean(args[6]);
-                    settings.debug = Convert.ToBoolean(args[7]);
-
-                    //switch (args[5].ToString.ToLower) {
-
-                    //    case: ""
-                    //}
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogToConsole("Check your command arguments: " + ex.Message);
-                    Console.ReadKey();
-                    return;
-                }
-            }
-            else //there were no args, so we can check for a settings.json file
-            {
-                if (File.Exists("settings.json"))
-                {
-                    try
-                    {
-                        settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText("settings.json"));
-                        if (settings.localPort == 0)
-                        {
-                            Logger.LogToConsole("Local port missing!");
-                            return;
-                        }
-
-                        if (settings.remoteHost.Length == 0) 
-                        {
-                            Logger.LogToConsole("Remote host missing!");
-                            return;
-                        }
-
-                        if (settings.remotePort == 0)
-                        {
-                            Logger.LogToConsole("Remote port missing!");
-                            return;
-                        }
-                        if (settings.allowedAddresses.Count == 0)
-                        {
-                            Logger.LogToConsole("No allowed IP addresses!");
-                            return;
-                        }
-                        if (settings.walletAddress.Length == 0)
-                        {
-                            Logger.LogToConsole("Wallet address missing!");
-                            return;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Unable to load settings: " + ex.Message);
-                        return;
-                    }
-                } else
-                {
-                    Console.WriteLine("No settings.json found! Generating generic one..");
-                    Console.WriteLine("No settings.json found! Generating generic one");
-
-                    settings.allowedAddresses.Add("127.0.0.1");
-                    settings.allowedAddresses.Add("127.0.0.2");
-                    settings.debug = false;
-                    settings.log = false;
-                    settings.localPort = 9000;
-                    settings.remotePort = 4444;
-                    settings.remoteHost = "us1.ethermine.org";
-                    settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";
-                    settings.identifyDevFee = true;
-
-                    File.WriteAllText("settings.json",JsonConvert.SerializeObject(settings, Formatting.Indented));
-
-                    Console.WriteLine("Edit the new settings.json file and don't forget to change the wallet address!");
-                    Console.ReadKey();
-                    return;
-                }
-            }
+            // Load and process settings in the Settings class
+            Settings.ProcessArgs(args, out settings);
             
 
             AppDomain.CurrentDomain.UnhandledException += (s, e) => File.WriteAllText("Exceptions.txt", e.ExceptionObject.ToString());
