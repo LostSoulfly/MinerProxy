@@ -33,29 +33,29 @@ namespace MinerProxy
                     settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(settingsJson));
                     if (settings.localPort == 0)
                     {
-                        Logger.LogToConsole("Local port missing!");
+                        Logger.LogToConsole("Local port missing!", color: ConsoleColor.Red);
                         System.Environment.Exit(1);
                     }
 
                     if (settings.remoteHost.Length == 0)
                     {
-                        Logger.LogToConsole("Remote host missing!");
+                        Logger.LogToConsole("Remote host missing!", color: ConsoleColor.Red);
                         System.Environment.Exit(1);
                     }
 
                     if (settings.remotePort == 0)
                     {
-                        Logger.LogToConsole("Remote port missing!");
+                        Logger.LogToConsole("Remote port missing!", color: ConsoleColor.Red);
                         System.Environment.Exit(1);
                     }
                     if (settings.allowedAddresses.Count == 0)
                     {
-                        Logger.LogToConsole("No allowed IP addresses!");
+                        Logger.LogToConsole("No allowed IP addresses!", color: ConsoleColor.Red);
                         System.Environment.Exit(1);
                     }
                     if (settings.walletAddress.Length == 0)
                     {
-                        Logger.LogToConsole("Wallet address missing!");
+                        Logger.LogToConsole("Wallet address missing!", color: ConsoleColor.Red);
                         System.Environment.Exit(1);
                     }
 
@@ -87,7 +87,7 @@ namespace MinerProxy
 
                 File.WriteAllText(settingsJson, JsonConvert.SerializeObject(settings, Formatting.Indented));
 
-                Console.WriteLine("Edit the new settings.json file and don't forget to change the wallet address!");
+                Console.WriteLine("Edit the new {0} file and don't forget to change the wallet address!", settingsJson);
                 Console.ReadKey();
                 System.Environment.Exit(1);
             }
