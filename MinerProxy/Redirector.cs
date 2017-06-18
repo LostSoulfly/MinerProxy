@@ -38,14 +38,14 @@ namespace MinerProxy
             double sharesPerHour = (m_submittedShares / hours);
             double sharesPerHourTruncated = Math.Truncate(sharesPerHour * 100) / 100;
 
-            Logger.LogToConsole(string.Format(m_rigName + "'s status update: "), m_endpoint);
-            Logger.LogToConsole(string.Format("Hashrate: {0}", m_hashRate.ToString("#,##0,Mh/s").Replace(",", ".")), m_endpoint);
-            Logger.LogToConsole(string.Format("Found shares: {0}", m_submittedShares), m_endpoint);
-            Logger.LogToConsole(string.Format("Accepted shares: {0}", m_acceptedShares), m_endpoint);
-            Logger.LogToConsole(string.Format("Rejected shares: {0}", m_rejectedShares),  m_endpoint);
-            Logger.LogToConsole(string.Format("Time connected: {0}", timeSpan.ToString("hh\\:mm")),  m_endpoint);
-            Logger.LogToConsole(string.Format("Shares per minute: {0}", string.Format("{0:N2}", sharesPerMinuteTruncated)),  m_endpoint);
-            Logger.LogToConsole(string.Format("Shares per hour: {0}", string.Format("{0:N2}", sharesPerHourTruncated)),  m_endpoint);
+            Logger.LogToConsole(string.Format(m_rigName + "'s status update: "));
+            Logger.LogToConsole(string.Format("Hashrate: {0}", m_hashRate.ToString("#,##0,Mh/s").Replace(",", ".")));
+            Logger.LogToConsole(string.Format("Found shares: {0}", m_submittedShares));
+            Logger.LogToConsole(string.Format("Accepted shares: {0}", m_acceptedShares));
+            Logger.LogToConsole(string.Format("Rejected shares: {0}", m_rejectedShares));
+            Logger.LogToConsole(string.Format("Time connected: {0}", timeSpan.ToString("hh\\:mm")));
+            Logger.LogToConsole(string.Format("Shares per minute: {0}", string.Format("{0:N2}", sharesPerMinuteTruncated)));
+            Logger.LogToConsole(string.Format("Shares per hour: {0}", string.Format("{0:N2}", sharesPerHourTruncated)));
 
             Console.ResetColor();
         }
