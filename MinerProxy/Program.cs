@@ -55,7 +55,7 @@ namespace MinerProxy
                 listener.Listen(100);
             } catch (Exception ex)
             {
-                Logger.LogToConsole("Error: {0}", ex.Message);
+                Logger.LogToConsole(string.Format("Error: {0}", ex.Message), color: ConsoleColor.Red);
                 return;
             }
 
@@ -79,6 +79,12 @@ namespace MinerProxy
 
                     switch (key)
                     {
+
+                        case "S":
+                            settings.showRigStats = !settings.showRigStats;
+                            Logger.LogToConsole((settings.showRigStats) ? "RigStats disabled" : "RigStats enabled");
+                            break;
+
                         case "L":
                             settings.log = !settings.log;
                             Logger.LogToConsole((settings.log) ? "Logging enabled" : "Logging disabled");
@@ -134,7 +140,7 @@ namespace MinerProxy
                 {
                     if (!settings.allowedAddresses.Contains(remoteAddress))
                     {
-                        Logger.LogToConsole("Remote host " + remoteAddress + " not allowed; ignoring");
+                        Logger.LogToConsole("Remote host " + remoteAddress + " not allowed; ignoring", color: ConsoleColor.Red);
 
                         return; //if the address supplied isn't allowed, just return and keep listening.
                     }
@@ -143,7 +149,7 @@ namespace MinerProxy
             }
             catch (SocketException se)
             {
-                Logger.LogToConsole(string.Format("Accept failed with {0}", se.ErrorCode));
+                Logger.LogToConsole(string.Format("Accept failed with {0}", se.ErrorCode), color: ConsoleColor.Red);
             }
         }
 
@@ -159,6 +165,7 @@ namespace MinerProxy
                 }
                 else
                 {
+                    if (settings.debug) Logger.LogToConsole("Logging queue stopped");
                     return;
                 }
             }
