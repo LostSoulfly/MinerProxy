@@ -13,9 +13,7 @@ namespace MinerProxy
         private readonly string m_name;
         private readonly string m_endpoint;
         private Session m_client, m_server;
-        private string m_proxyWallet;
         private string m_replacedWallet;
-        private bool m_identifyDevFee;
         private string m_rigName = "";
         private string m_workerName = "";
         private string m_displayName = "";
@@ -24,11 +22,9 @@ namespace MinerProxy
         private long m_submittedShares = 0;
         private long m_acceptedShares= 0;
 
-        public Redirector(Socket client, string ip, int port, string walletAddress, bool identifyDevFee)
+        public Redirector(Socket client, string ip, int port)
         {
             m_name = client.RemoteEndPoint.ToString();
-            m_proxyWallet = walletAddress;
-            m_identifyDevFee = identifyDevFee;
             
             Logger.LogToConsole(string.Format("Session started: ({0})", m_name));
 
@@ -233,28 +229,28 @@ namespace MinerProxy
                             m_replacedWallet = obj.@params[0];
                             m_rigName = obj.@params[0].Substring(obj.@params[0].IndexOf(".") + 1);
                             m_displayName = m_rigName;
-                            obj.@params[0] = m_proxyWallet + "." + m_rigName;
+                            obj.@params[0] = Program.settings.walletAddress + "." + m_rigName;
 
                         }
-                        else if (m_identifyDevFee)
+                        else if (Program.settings.identifyDevFee)
                         { //there is no rigName, so we just replace the wallet
                             m_replacedWallet = obj.@params[0];
 
-                            if (m_replacedWallet != m_proxyWallet)
+                            if (m_replacedWallet != Program.settings.walletAddress)
                                 m_displayName = "DevFee";
                             
                             //Still no rigName? Not even from the Worker field?
                             if (obj.worker == null)
                             {
                                 //No rigname and no worker? Just set the wallet address to our own and call it a day
-                                obj.@params[0] = m_proxyWallet;
+                                obj.@params[0] = Program.settings.walletAddress;
                                 m_noRigName = true;
                             }
                             else if (obj.worker.Equals("eth1.0")) {
                                 //It's probably a DevFee - Could leave the DevFee wallet alone in future release but give it unique rigName
                                 //Here's an address of his: 0xc6F31A79526c641de4E432CB22a88BB577A67eaC
                                 //All mining is 'default' but we could stand out a bit :D
-                                if (m_replacedWallet != m_proxyWallet)
+                                if (m_replacedWallet != Program.settings.walletAddress)
                                 { //if the wallet we're replacing isn't ours, it's the DevFee
                                     m_displayName = "DevFee";
                                 } else
@@ -262,12 +258,12 @@ namespace MinerProxy
                                     m_noRigName = true;
                                     m_displayName = m_name;
                                 }
-                                obj.@params[0] = m_proxyWallet;     //regardless what the wallet was, let's replace it
+                                obj.@params[0] = Program.settings.walletAddress;     //regardless what the wallet was, let's replace it
                             }
                             else {
                                 m_displayName = obj.worker;
                                 m_workerName = obj.worker;
-                                obj.@params[0] = m_proxyWallet;
+                                obj.@params[0] = Program.settings.walletAddress;
                                 if (Program.settings.debug) Logger.LogToConsole(string.Format("Worker: {0}", m_workerName));
                             }
                         }
@@ -275,7 +271,7 @@ namespace MinerProxy
                         { //No rigName, but don't replace it with DevFee, either.
                             m_replacedWallet = obj.@params[0];
                             if (obj.worker != null) m_displayName = obj.worker;
-                            obj.@params[0] = m_proxyWallet;
+                            obj.@params[0] = Program.settings.walletAddress;
                         }
                         string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n"; 
                         //if (Program.settings.debug) Logger.LogToConsole("Before: " + Encoding.UTF8.GetString(buffer, 0, length));

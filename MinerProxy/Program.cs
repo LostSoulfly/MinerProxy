@@ -153,7 +153,7 @@ namespace MinerProxy
                         return; //if the address supplied isn't allowed, just retrun and keep listening.
                     }
                 }
-                new Redirector(socket, settings.remoteHost, settings.remotePort, settings.walletAddress, settings.identifyDevFee);
+                new Redirector(socket, settings.remoteHost, settings.remotePort);
             }
             catch (SocketException se)
             {
