@@ -17,6 +17,7 @@ namespace MinerProxy
         public bool showRigStats { get; set; }
         public int rigStatsIntervalSeconds { get; set; }
         public string walletAddress { get; set; }
+        internal string settingsFile { get; set; }
         public List<string> allowedAddresses = new List<string>();
 
 
@@ -58,7 +59,7 @@ namespace MinerProxy
                         Logger.LogToConsole("Wallet address missing!", color: ConsoleColor.Red);
                         System.Environment.Exit(1);
                     }
-
+                    settings.settingsFile = settingsJson;
                     return;
 
                 }
@@ -85,11 +86,23 @@ namespace MinerProxy
                 settings.rigStatsIntervalSeconds = 60;
                 settings.showRigStats = true;
 
-                File.WriteAllText(settingsJson, JsonConvert.SerializeObject(settings, Formatting.Indented));
+                writeSettings(settingsJson, settings);
 
                 Console.WriteLine("Edit the new {0} file and don't forget to change the wallet address!", settingsJson);
                 Console.ReadKey();
                 System.Environment.Exit(1);
+            }
+        }
+
+        public static void writeSettings(string settingsJson, Settings settings)
+        {
+            try
+            {
+                File.WriteAllText(settingsJson, JsonConvert.SerializeObject(settings, Formatting.Indented));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Save settings error: {0}", ex.Message);
             }
         }
 
