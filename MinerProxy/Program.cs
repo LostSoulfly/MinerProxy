@@ -85,6 +85,22 @@ namespace MinerProxy
                             Logger.LogToConsole((settings.showRigStats) ? "RigStats enabled" : "RigStats disabled");
                             break;
 
+                        case "U":
+                            //update settings file with new options
+                            Settings.writeSettings(settings.settingsFile, settings);
+                            Logger.LogToConsole(string.Format("Updated {0} file to newest version", settings.settingsFile));
+                            break;
+
+                        case "C":
+                            settings.colorizeConsole = (!settings.colorizeConsole);
+                            Logger.LogToConsole((settings.colorizeConsole) ? "Colors enabled" : "Colors disabled");
+                            break;
+
+                        case "E":
+                            settings.showEndpointInConsole = (!settings.showEndpointInConsole);
+                            Logger.LogToConsole((settings.showEndpointInConsole) ? "Endpoint prefix enabled" : "Endpoint prefix disabled");
+                            break;
+
                         case "L":
                             settings.log = !settings.log;
                             Logger.LogToConsole((settings.log) ? "Logging enabled" : "Logging disabled");
@@ -108,9 +124,24 @@ namespace MinerProxy
                             break;
 
                         case "Q":
-                            Console.WriteLine("Shutting down");
-                            Console.ReadKey();
+                            Console.WriteLine("Shutting down MinerProxy..");
+                            System.Environment.Exit(0);
                             return;
+
+                        case "H":
+                            lock (Logger.ConsoleBlockLock)
+                            {
+                                Logger.LogToConsole("MinerProxy Available Commands", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("S key: Enable/Disable showing Rig Stats", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("C key: Enable/Disable console colors", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("E key: Enable/Disable Endpoint prefix on log messages", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("L key: Enable/Disable logging to file", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("D key: Enable/Disable debug messages", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("U key: Update the loaded JSON file with new settings options", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("Q key: Quit MinerProxy", "HELP", ConsoleColor.Yellow);
+                            }
+                                break;
+
                     }
                 }
             }
