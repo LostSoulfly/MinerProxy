@@ -29,7 +29,8 @@ namespace MinerProxy
 
         private void OnStatusUpdate(object source, ElapsedEventArgs e)
         {
-            Console.ForegroundColor = ConsoleColor.Cyan;
+            if (!Program.settings.showRigStats)
+                return;
 
             DateTime timeNow = DateTime.Now;
             TimeSpan timeSpan = (timeNow - m_connectionStartTime);
@@ -39,17 +40,24 @@ namespace MinerProxy
             double sharesPerMinuteTruncated = Math.Truncate(sharesPerMinute * 100) / 100;
             double sharesPerHour = (m_submittedShares / hours);
             double sharesPerHourTruncated = Math.Truncate(sharesPerHour * 100) / 100;
+            ConsoleColor color;
 
-            Logger.LogToConsole(string.Format(m_rigName + "'s status update: "), m_endpoint);
-            Logger.LogToConsole(string.Format("Hashrate: {0}", m_hashRate.ToString("#,##0,Mh/s").Replace(",", ".")), m_endpoint);
-            Logger.LogToConsole(string.Format("Found shares: {0}", m_submittedShares), m_endpoint);
-            Logger.LogToConsole(string.Format("Accepted shares: {0}", m_acceptedShares), m_endpoint);
-            Logger.LogToConsole(string.Format("Rejected shares: {0}", m_rejectedShares),  m_endpoint);
-            Logger.LogToConsole(string.Format("Time connected: {0}", timeSpan.ToString("hh\\:mm")),  m_endpoint);
-            Logger.LogToConsole(string.Format("Shares per minute: {0}", string.Format("{0:N2}", sharesPerMinuteTruncated)),  m_endpoint);
-            Logger.LogToConsole(string.Format("Shares per hour: {0}", string.Format("{0:N2}", sharesPerHourTruncated)),  m_endpoint);
+            lock (Logger.ConsoleBlockLock)
+            {
+                Logger.LogToConsole(string.Format(m_displayName + "'s status update: "), m_endpoint, ConsoleColor.Cyan);
 
-            Console.ResetColor();
+                color = ConsoleColor.DarkCyan;
+                Logger.LogToConsole(string.Format("Hashrate: {0}", m_hashRate.ToString("#,##0,Mh/s").Replace(",", ".")), m_endpoint, color);
+
+                if (m_submittedShares != m_acceptedShares) //No reason to show if they match, save space with multiple rigs
+                    Logger.LogToConsole(string.Format("Found shares: {0}", m_submittedShares), m_endpoint, color);
+
+                Logger.LogToConsole(string.Format("Accepted shares: {0}", m_acceptedShares), m_endpoint, color);
+                if (m_rejectedShares > 0) Logger.LogToConsole(string.Format("Rejected shares: {0}", m_rejectedShares), m_endpoint, color);
+                Logger.LogToConsole(string.Format("Time connected: {0}", timeSpan.ToString("hh\\:mm")), m_endpoint, color);
+                Logger.LogToConsole(string.Format("Shares per minute: {0}", string.Format("{0:N2}", sharesPerMinuteTruncated)), m_endpoint, color);
+                Logger.LogToConsole(string.Format("Shares per hour: {0}", string.Format("{0:N2}", sharesPerHourTruncated)), m_endpoint, color);
+            }
         }
 
         public Redirector(Socket client, string ip, int port)
@@ -59,14 +67,22 @@ namespace MinerProxy
 
             m_statusUpdateTimer = new Timer();
             m_statusUpdateTimer.Elapsed += new ElapsedEventHandler(OnStatusUpdate);
-            m_statusUpdateTimer.Interval = 60000;
+
+            if ((Program.settings.rigStatsIntervalSeconds) > 0 && (Program.settings.rigStatsIntervalSeconds <= 3600))
+            {
+                m_statusUpdateTimer.Interval = Program.settings.rigStatsIntervalSeconds * 1000;
+            }
+            else
+            {
+                m_statusUpdateTimer.Interval = 60000;
+            }
             m_statusUpdateTimer.Enabled = true;
 
             int index = m_name.IndexOf(":");
             m_endpoint = m_name.Substring(0, index);
             m_endpoint = m_endpoint + "_" + m_name.Substring(index + 1);
 
-            Logger.LogToConsole(string.Format("Session started: ({0})", m_name),  m_endpoint);
+            Logger.LogToConsole(string.Format("Session started: ({0})", m_name),  m_endpoint, ConsoleColor.DarkGreen);
 
             m_alive = false;
             
@@ -99,7 +115,7 @@ namespace MinerProxy
             {
                 m_client.Dispose();
                 m_statusUpdateTimer.Enabled = false;
-                Logger.LogToConsole(string.Format("Connection bridge failed with {0} ({1})",se.ErrorCode,m_name),  m_endpoint);
+                Logger.LogToConsole(string.Format("Connection bridge failed with {0} ({1})",se.ErrorCode,m_name),  m_endpoint, ConsoleColor.Red);
             }
         }
 
@@ -121,20 +137,24 @@ namespace MinerProxy
                             break;
 
                         case 3:
-                            Logger.LogToConsole("eth_getWork from server.",  m_endpoint);
+                            if (Program.settings.debug)
+                                Logger.LogToConsole("eth_getWork from server.", m_endpoint);
                             break;
 
                         case 4:
-                            Logger.LogToConsole("Share accepted?",  m_endpoint);
+                            Logger.LogToConsole("Share accepted?", m_endpoint, ConsoleColor.Green);
                             break;
 
                         default:
                             if (Program.settings.debug)
                             {
-                                Logger.LogToConsole("From Server1 <----<",  m_endpoint);
-                                Logger.LogToConsole("Unknown ID: " + obj.id,  m_endpoint);
-                                Logger.LogToConsole("Param Count: " + obj.result.Count,  m_endpoint);
-                                Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length),  m_endpoint);
+                                lock (Logger.ConsoleBlockLock)
+                                {
+                                    Logger.LogToConsole("From Server1 <----<", m_endpoint, ConsoleColor.Gray);
+                                    Logger.LogToConsole("Unknown ID: " + obj.id, m_endpoint, ConsoleColor.Gray);
+                                    Logger.LogToConsole("Param Count: " + obj.result.Count, m_endpoint, ConsoleColor.Gray);
+                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), m_endpoint, ConsoleColor.Gray);
+                                }
                             }
                             break;
                     }
@@ -147,13 +167,13 @@ namespace MinerProxy
 
                         if ((obj.error != null) && obj.result.Equals(null))
                         {
-                            Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), m_displayName, obj.error.code, obj.error.message), m_endpoint);
+                            Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), m_displayName, obj.error.code, obj.error.message), m_endpoint, ConsoleColor.Red);
                         }
                         else if (!obj.result.Equals(null))
                         {
                             if (obj.result == false)
                             {
-                                Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), m_displayName, obj.error.code, obj.error.message), m_endpoint);
+                                Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), m_displayName, obj.error.code, obj.error.message), m_endpoint, ConsoleColor.Red);
                             }
                         }
 
@@ -162,10 +182,10 @@ namespace MinerProxy
                             case 2:
                                 if (obj.result == true)
                                 {
-                                    Logger.LogToConsole("Stratum Authorization success: " + m_displayName,  m_endpoint);
+                                    Logger.LogToConsole("Stratum Authorization success: " + m_displayName,  m_endpoint, ConsoleColor.DarkGreen);
                                 } else
                                 {
-                                    Logger.LogToConsole("eth_SubmitLogin failed!",  m_endpoint);
+                                    Logger.LogToConsole("eth_SubmitLogin failed!",  m_endpoint, ConsoleColor.Red);
                                 }
                                 break;
 
@@ -174,16 +194,13 @@ namespace MinerProxy
                                 {
                                     m_acceptedShares++;
 
-                                    Console.ForegroundColor = ConsoleColor.Green;
-                                    Logger.LogToConsole(string.Format(m_displayName + "'s share got accepted. [{0} shares accepted]", m_acceptedShares),  m_endpoint);
-                                    Console.ResetColor();
+                                    Logger.LogToConsole(string.Format(m_displayName + "'s share got accepted. [{0} shares accepted]", m_acceptedShares),  m_endpoint, ConsoleColor.Green);
+
                                 }
                                 else if (obj.result == false)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.Red;
                                     m_rejectedShares++;
-                                    Logger.LogToConsole(string.Format(m_displayName + "'s share got rejected. [{0} shares rejected]", m_acceptedShares),  m_endpoint);
-                                    Console.ResetColor();
+                                    Logger.LogToConsole(string.Format(m_displayName + "'s share got rejected. [{0} shares rejected]", m_acceptedShares),  m_endpoint, ConsoleColor.Red);
                                 }
                                 break;
 
@@ -194,10 +211,13 @@ namespace MinerProxy
                             default:
                                 if (Program.settings.debug)
                                 {
-                                    Logger.LogToConsole("From Server2 <----<",  m_endpoint);
-                                    Logger.LogToConsole("Unknown ID: " + obj.id,  m_endpoint);
-                                    Logger.LogToConsole("Result: " + obj.result,  m_endpoint);
-                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length),  m_endpoint);
+                                    lock (Logger.ConsoleBlockLock)
+                                    {
+                                        Logger.LogToConsole("From Server2 <----<", m_endpoint);
+                                        Logger.LogToConsole("Unknown ID: " + obj.id, m_endpoint);
+                                        Logger.LogToConsole("Result: " + obj.result, m_endpoint);
+                                        Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), m_endpoint);
+                                    }
                                 }
                                 break;
                         }
@@ -211,34 +231,38 @@ namespace MinerProxy
                             if (obj.error != null && obj.error.Length > 0)
                             {
                                 if (obj.result == false)
-                                    Logger.LogToConsole(string.Format(("Server error for {0}: {1}"), m_displayName, obj.error), m_endpoint);
+                                    Logger.LogToConsole(string.Format(("Server error for {0}: {1}"), m_displayName, obj.error), m_endpoint, ConsoleColor.Red);
                             }
                             else
                             {
-                                Logger.LogToConsole(ex2.ToString(), m_endpoint);
-                                Logger.LogToConsole("From Server3 <----<", m_endpoint);
-                                Logger.LogToConsole("ID: " + obj.id, m_endpoint);
-                                Logger.LogToConsole("Result: " + obj.result, m_endpoint);
-                                Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), m_endpoint);
+                                lock (Logger.ConsoleBlockLock)
+                                {
+                                    Logger.LogToConsole(ex2.ToString(), m_endpoint);
+                                    Logger.LogToConsole("From Server3 <----<", m_endpoint);
+                                    Logger.LogToConsole("ID: " + obj.id, m_endpoint);
+                                    Logger.LogToConsole("Result: " + obj.result, m_endpoint);
+                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), m_endpoint);
+                                }
                             }
                         }
                         catch (Exception ex3)
                         {
                             if (Program.settings.debug)
                             {
-                                Logger.LogToConsole(ex3.ToString(), m_endpoint);
-                                Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), m_endpoint);
+                                lock (Logger.ConsoleBlockLock)
+                                {
+                                    Logger.LogToConsole(ex3.ToString(), m_endpoint);
+                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), m_endpoint);
+                                }
                             }
-
                         }
                     }
                 }
-                
             }
             catch (Exception ex)
             {
                 Logger.LogToConsole(ex.ToString(),  m_endpoint);
-                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length),  m_endpoint);
+                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length),  m_endpoint, ConsoleColor.Red);
             }
 
             if (m_alive && m_client.Disposed == false)
@@ -272,7 +296,7 @@ namespace MinerProxy
                 switch (obj.id)
                 {
                     case 2: //eth_submitLogin
-                        Logger.LogToConsole("Ethereum Login detected!",  m_endpoint);
+                        Logger.LogToConsole("Ethereum Login detected!",  m_endpoint, ConsoleColor.DarkGreen);
                         madeChanges = true;
                         if (obj.@params[0].Contains("."))
                         {//There is likely a rigName in the wallet address.
@@ -283,7 +307,7 @@ namespace MinerProxy
                             obj.@params[0] = Program.settings.walletAddress + "." + m_rigName;
                         }
                         else if (obj.@params[0].Contains("/"))
-                        {//There is likely a rigName in the wallet address.
+                        {//There is likely different rigname, may need to check for email addresses here as well
                             m_replacedWallet = obj.@params[0];
                             m_rigName = obj.@params[0].Substring(obj.@params[0].IndexOf("/") + 1);
                             m_displayName = m_rigName;
@@ -321,7 +345,7 @@ namespace MinerProxy
                                 m_displayName = obj.worker;
                                 m_workerName = obj.worker;
                                 obj.@params[0] = Program.settings.walletAddress;
-                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Worker: {0}", m_workerName), m_endpoint);
+                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Worker: {0}", m_workerName), m_endpoint, ConsoleColor.DarkGreen);
                             }
                         }
                         else
@@ -332,8 +356,12 @@ namespace MinerProxy
                         }
 
                         string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
-                        Logger.LogToConsole("Old Wallet: " + m_replacedWallet,  m_endpoint);
-                        Logger.LogToConsole("New Wallet: " + obj.@params[0],  m_endpoint);
+
+                        lock (Logger.ConsoleBlockLock)
+                        {
+                            Logger.LogToConsole("Old Wallet: " + m_replacedWallet, m_endpoint, ConsoleColor.Yellow);
+                            Logger.LogToConsole("New Wallet: " + obj.@params[0], m_endpoint, ConsoleColor.Yellow);
+                        }
 
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                         newLength = tempBuffer.Length;
@@ -345,10 +373,8 @@ namespace MinerProxy
                         break;
 
                     case 4: //eth_submitWork
-                        Console.ForegroundColor = ConsoleColor.Green;
                         m_submittedShares++;
-                        Logger.LogToConsole(string.Format(m_displayName + " found a share. [{0} shares found]", m_submittedShares),  m_endpoint);
-                        Console.ResetColor();
+                        Logger.LogToConsole(string.Format(m_displayName + " found a share. [{0} shares found]", m_submittedShares),  m_endpoint, ConsoleColor.Green);
                         break;
 
                     case 6: //eth_submitHashrate
@@ -356,18 +382,21 @@ namespace MinerProxy
                         m_hashRate = hashrate;
                         if (Program.settings.debug)
                         {
-                            Logger.LogToConsole(string.Format("Hashrate reported by {0}: {1}", m_displayName, hashrate.ToString("#,##0,Mh/s").Replace(",", ".")),  m_endpoint);
+                            Logger.LogToConsole(string.Format("Hashrate reported by {0}: {1}", m_displayName, hashrate.ToString("#,##0,Mh/s").Replace(",", ".")),  m_endpoint,ConsoleColor.Magenta);
                         }
                         break;
 
                     default:
                         if (Program.settings.debug)
                         {
-                            Logger.LogToConsole("From Client >---->",  m_endpoint);
-                            Logger.LogToConsole("Unknown ID: " + obj.id,  m_endpoint);
-                            Logger.LogToConsole("Method: " + obj.method,  m_endpoint);
-                            Logger.LogToConsole("Param Count: " + obj.@params.Count,  m_endpoint);
-                            Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length),  m_endpoint);
+                            lock (Logger.ConsoleBlockLock)
+                            {
+                                Logger.LogToConsole("From Client >---->", m_endpoint);
+                                Logger.LogToConsole("Unknown ID: " + obj.id, m_endpoint);
+                                Logger.LogToConsole("Method: " + obj.method, m_endpoint);
+                                Logger.LogToConsole("Param Count: " + obj.@params.Count, m_endpoint);
+                                Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), m_endpoint);
+                            }
                         }
                         break;
 
@@ -378,7 +407,7 @@ namespace MinerProxy
             {
                 madeChanges = false;
                 Logger.LogToConsole(ex.Message,  m_endpoint);
-                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length),  m_endpoint);
+                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length),  m_endpoint, ConsoleColor.Red);
             }
 
             if (m_alive && m_server.Disposed == false)
