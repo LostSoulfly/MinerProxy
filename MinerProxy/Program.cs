@@ -44,6 +44,8 @@ namespace MinerProxy
             if (settings.identifyDevFee)
                 Logger.LogToConsole("Showing DevFee mining as 'DevFee' rigName");
 
+            Logger.LogToConsole("Coin protocol: " + settings.minedCoin);
+
             Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress);
 
             
