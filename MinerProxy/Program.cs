@@ -65,6 +65,7 @@ namespace MinerProxy
             Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.localPort, listener.LocalEndPoint));
             Logger.LogToConsole("Accepting connections from: " + string.Join(", ", settings.allowedAddresses));
 
+            Logger.LogToConsole("Press 'H' for available commands", "HELP");
 
             var listenerTask = new Task(() => listenerStart(), TaskCreationOptions.LongRunning);
             listenerTask.Start();
