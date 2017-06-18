@@ -21,7 +21,6 @@ namespace MinerProxy
         internal string settingsFile { get; set; }
         public List<string> allowedAddresses = new List<string>();
 
-
         public static void LoadSettings(out Settings settings, string settingsJson = "settings.json")
         {
 
@@ -135,6 +134,5 @@ namespace MinerProxy
                 return;
             }
         }
-
     }
 }
