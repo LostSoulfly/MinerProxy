@@ -328,9 +328,10 @@ namespace MinerProxy
                         break;
 
                     case 6: //eth_submitHashrate
+                        long hashrate = Convert.ToInt64(obj.@params[0], 16);
+                        m_hashRate = hashrate;
                         if (Program.settings.debug)
                         {
-                            long hashrate = Convert.ToInt64(obj.@params[0], 16); ;
                             Logger.LogToConsole(string.Format("Hashrate reported by {0}: {1}", m_displayName, hashrate.ToString("#,##0,Mh/s").Replace(",", "."))); ;
                         }
                         break;
