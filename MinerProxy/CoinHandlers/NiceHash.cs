@@ -64,7 +64,7 @@ namespace MinerProxy.CoinHandlers
                                     if (redirector.m_replacedWallet != Program.settings.walletAddress)
                                         redirector.m_displayName = "DevFee";
 
-                                    
+                                    if (Program.settings.replaceWallet) dyn.@params[0] = Program.settings.walletAddress + "." + redirector.m_displayName;
                                 }
                                 else
                                 {

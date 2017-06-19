@@ -204,6 +204,9 @@ namespace MinerProxy
                     break;
 
             }
+
+            if (Program.settings.log)
+                Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " <----<\r\n" + Encoding.UTF8.GetString(buffer, 0, length)));
         }
         private void OnClientPacket(byte[] buffer, int length)
         {
