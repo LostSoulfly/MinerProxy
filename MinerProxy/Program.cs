@@ -123,7 +123,7 @@ namespace MinerProxy
                             }
                             else
                             {
-                                logTokenSource.CancelAfter(TimeSpan.FromSeconds(1));
+                                logTokenSource.Cancel();
                             }
                             break;
 
