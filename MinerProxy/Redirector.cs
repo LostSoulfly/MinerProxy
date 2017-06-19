@@ -50,7 +50,8 @@ namespace MinerProxy
                 Logger.LogToConsole(string.Format(m_displayName + "'s status update: "), m_endpoint, ConsoleColor.Cyan);
 
                 color = ConsoleColor.DarkCyan;
-                Logger.LogToConsole(string.Format("Hashrate: {0}", m_hashRate.ToString("#,##0,Mh/s").Replace(",", ".")), m_endpoint, color);
+                if (Program.settings.minedCoin != "NICEHASH") // Nicehash doesn't report hashrate
+                    Logger.LogToConsole(string.Format("Hashrate: {0}", m_hashRate.ToString("#,##0,Mh/s").Replace(",", ".")), m_endpoint, color);
 
                 if (m_submittedShares != m_acceptedShares) //No reason to show if they match, save space with multiple rigs
                     Logger.LogToConsole(string.Format("Found shares: {0}", m_submittedShares), m_endpoint, color);
@@ -157,12 +158,16 @@ namespace MinerProxy
                 case "CRY":
                     break;
 
+                case "NICEHASH":
+                    m_coinHandler = new CoinHandlers.NiceHash(this);
+                    break;
+
             }
         }
 
         private void OnServerPacket(byte[] buffer,int length)
         {
-
+            // Is it slow comparing strings every packet?
             switch (Program.settings.minedCoin)
             {
                 case "ETC":
@@ -194,10 +199,15 @@ namespace MinerProxy
                 case "CRY":
                     break;
 
+                case "NICEHASH":
+                    m_coinHandler.OnEthServerPacket(buffer, length);
+                    break;
+
             }
         }
         private void OnClientPacket(byte[] buffer, int length)
         {
+            // Is it slow comparing strings every packet?
             switch (Program.settings.minedCoin)
             {
                 case "ETC":
@@ -227,6 +237,10 @@ namespace MinerProxy
 
                 case "CRYPTONOTE":
                 case "CRY":
+                    break;
+
+                case "NICEHASH":
+                    m_coinHandler.OnEthClientPacket(buffer, length);
                     break;
 
             }

@@ -211,6 +211,9 @@ namespace MinerProxy
                 case "CRY":
                     return true;
 
+                case "NICEHASH":
+                    return true;
+
                 default:
                     return false;
             }
