@@ -43,22 +43,51 @@ namespace MinerProxy.CoinHandlers
                                 Logger.LogToConsole("wallet: " + wallet, redirector.m_endpoint);
 
 
-                                if (wallet.Contains("."))
+                                if (wallet.Contains(".") && Program.settings.useDotWithRigName)
                                 {//There is likely a rigName in the wallet address.
                                     redirector.m_replacedWallet = wallet;
                                     redirector.m_rigName = wallet.Substring(wallet.IndexOf(".") + 1);
                                     redirector.m_displayName = redirector.m_rigName;
-                                    dyn.@params[0] = Program.settings.walletAddress + "." + redirector.m_rigName;
+                                    if (Program.settings.replaceWallet) dyn.@params[0] = Program.settings.walletAddress + "." + redirector.m_rigName;
                                 }
+                                else if (wallet.Contains("/") && Program.settings.useSlashWithRigName)
+                                {//There is likely different rigname, may need to check for email addresses here as well
+                                    redirector.m_replacedWallet = wallet;
+                                    redirector.m_rigName = wallet.Substring(wallet.IndexOf("/") + 1);
+                                    redirector.m_displayName = redirector.m_rigName;
+                                    if (Program.settings.replaceWallet) dyn.@params[0] = Program.settings.walletAddress + "/" + redirector.m_rigName;
+                                }
+                                else if (Program.settings.identifyDevFee)
+                                {//there is no rigName, so we just replace the wallet
+                                    redirector.m_replacedWallet = wallet;
+
+                                    if (redirector.m_replacedWallet != Program.settings.walletAddress)
+                                        redirector.m_displayName = "DevFee";
+
+                                    
+                                }
+                                else
+                                {
+                                    if (Program.settings.replaceWallet) dyn.@params[0] = Program.settings.walletAddress;
+                                    if (Program.settings.debug) Logger.LogToConsole(string.Format("Worker: {0}", redirector.m_workerName));
+                                }
+
                                 string tempBuffer = JsonConvert.SerializeObject(dyn, Formatting.None) + "\n";
 
                                 val = dyn.@params[0];
                                 wallet = val.Value.ToString();
 
-                                lock (Logger.ConsoleBlockLock)
+                                if (Program.settings.replaceWallet)
                                 {
-                                    Logger.LogToConsole("Old Wallet: " + redirector.m_replacedWallet, redirector.m_endpoint, ConsoleColor.Yellow);
-                                    Logger.LogToConsole("New Wallet: " + wallet, redirector.m_endpoint, ConsoleColor.Yellow);
+                                    lock (Logger.ConsoleBlockLock)
+                                    {
+                                        Logger.LogToConsole("Old Wallet: " + redirector.m_replacedWallet, redirector.m_endpoint, ConsoleColor.Yellow);
+                                        Logger.LogToConsole("New Wallet: " + wallet, redirector.m_endpoint, ConsoleColor.Yellow);
+                                    }
+                                }
+                                else
+                                {
+                                    Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.m_displayName, wallet));
                                 }
 
                                 newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
