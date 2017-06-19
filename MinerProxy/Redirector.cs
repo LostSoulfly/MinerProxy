@@ -66,6 +66,7 @@ namespace MinerProxy
         public Redirector(Socket client, string ip, int port)
         {
             SetupCoinHandler();
+
             m_name = client.RemoteEndPoint.ToString();
             m_connectionStartTime = DateTime.Now;
 

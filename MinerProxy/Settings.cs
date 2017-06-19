@@ -15,10 +15,15 @@ namespace MinerProxy
         public bool identifyDevFee { get; set; }
         public bool showEndpointInConsole { get; set; }
         public bool showRigStats { get; set; }
+        public bool useDotWithRigName { get; set; }
+        public bool useSlashWithRigName { get; set; }
+        public bool useWorkerWithRigName { get; set; }
+        public bool colorizeConsole { get; set; }
+        public bool replaceWallet { get; set; }
         public int rigStatsIntervalSeconds { get; set; }
         public string walletAddress { get; set; }
-        public bool colorizeConsole { get; set; }
         public string minedCoin { get; set; }
+
         internal string settingsFile { get; set; }
         public List<string> allowedAddresses = new List<string>();
 
@@ -124,16 +129,21 @@ namespace MinerProxy
             }
             if (settings.debug != true) settings.debug = false;
             if (settings.log != true) settings.log = false;
-            if (settings.localPort == 0) settings.localPort = 9000;
-            if (settings.remotePort == 0) settings.remotePort = 4444;
-            if (string.IsNullOrEmpty(settings.remoteHost)) settings.remoteHost = "us1.ethermine.org";
-            if (string.IsNullOrEmpty(settings.walletAddress)) settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";
+            if (settings.useDotWithRigName != true) settings.useDotWithRigName = false;
+            if (settings.useSlashWithRigName != true) settings.useSlashWithRigName = false;
+            if (settings.useWorkerWithRigName != true) settings.useWorkerWithRigName = false;
+            settings.showEndpointInConsole = true;
             settings.identifyDevFee = true;
-            if (settings.showEndpointInConsole != false) settings.showEndpointInConsole = true;
-            if (settings.rigStatsIntervalSeconds == 0) settings.rigStatsIntervalSeconds = 60;
             settings.showRigStats = true;
             settings.colorizeConsole = true;
+            settings.replaceWallet = true;
+            if (settings.localPort == 0) settings.localPort = 9000;
+            if (settings.remotePort == 0) settings.remotePort = 4444;
+            if (settings.rigStatsIntervalSeconds == 0) settings.rigStatsIntervalSeconds = 60;
+            if (string.IsNullOrEmpty(settings.remoteHost)) settings.remoteHost = "us1.ethermine.org";
+            if (string.IsNullOrEmpty(settings.walletAddress)) settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";
             if (string.IsNullOrEmpty(settings.minedCoin)) settings.minedCoin = "ETH";
+            
 
             return settings;
         }

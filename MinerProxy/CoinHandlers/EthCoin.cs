@@ -14,7 +14,7 @@ namespace MinerProxy.CoinHandlers
 
         public EthCoin(Redirector r)
         {
-            if (Program.settings.debug) Logger.LogToConsole("EthCoin handler initialized", redirector.m_endpoint);
+            if (Program.settings.debug) Logger.LogToConsole("EthCoin handler initialized");
             redirector = r; //when this class is initialized, a reference to the Redirector class must be passed
         }
 
@@ -30,26 +30,25 @@ namespace MinerProxy.CoinHandlers
                 EthClientRootObject obj;
 
                 obj = JsonConvert.DeserializeObject<EthClientRootObject>(Encoding.UTF8.GetString(buffer, 0, length));
-
                 switch (obj.id)
                 {
                     case 2: //eth_submitLogin
                         Logger.LogToConsole("Ethereum Login detected!", redirector.m_endpoint, ConsoleColor.DarkGreen);
                         madeChanges = true;
-                        if (obj.@params[0].Contains("."))
+                        if (obj.@params[0].Contains(".") && Program.settings.useDotWithRigName)
                         {//There is likely a rigName in the wallet address.
 
                             redirector.m_replacedWallet = obj.@params[0];
                             redirector.m_rigName = obj.@params[0].Substring(obj.@params[0].IndexOf(".") + 1);
                             redirector.m_displayName = redirector.m_rigName;
-                            obj.@params[0] = Program.settings.walletAddress + "." + redirector.m_rigName;
+                            if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress + "." + redirector.m_rigName;
                         }
-                        else if (obj.@params[0].Contains("/"))
+                        else if (obj.@params[0].Contains("/") && Program.settings.useSlashWithRigName)
                         {//There is likely different rigname, may need to check for email addresses here as well
                             redirector.m_replacedWallet = obj.@params[0];
                             redirector.m_rigName = obj.@params[0].Substring(obj.@params[0].IndexOf("/") + 1);
                             redirector.m_displayName = redirector.m_rigName;
-                            obj.@params[0] = Program.settings.walletAddress + "/" + redirector.m_rigName;
+                            if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress + "/" + redirector.m_rigName;
                         }
                         else if (Program.settings.identifyDevFee)
                         { //there is no rigName, so we just replace the wallet
@@ -61,7 +60,7 @@ namespace MinerProxy.CoinHandlers
                             if (obj.worker == null)
                             {
                                 //if rigName exists, add the rigname to the new wallet, else just use wallet
-                                obj.@params[0] = Program.settings.walletAddress;
+                                if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress;
                                 redirector.m_noRigName = true;
                             }
                             else if (obj.worker.Equals("eth1.0"))
@@ -76,29 +75,43 @@ namespace MinerProxy.CoinHandlers
                                     redirector.m_noRigName = true;
                                     redirector.m_displayName = redirector.m_name;
                                 }
-                                obj.@params[0] = Program.settings.walletAddress;
+
+                                if (Program.settings.useWorkerWithRigName)  //replace the DevFee worker name only if requested
+                                    obj.worker = "DevFee";
+
+                                if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress;
                             }
                             else
                             {
-                                redirector.m_displayName = obj.worker;
-                                redirector.m_workerName = obj.worker;
-                                obj.@params[0] = Program.settings.walletAddress;
+                                if (Program.settings.useWorkerWithRigName)
+                                {
+                                    redirector.m_displayName = obj.worker;
+                                    redirector.m_workerName = obj.worker;
+                                }
+                                if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress;
                                 if (Program.settings.debug) Logger.LogToConsole(string.Format("Worker: {0}", redirector.m_workerName), redirector.m_endpoint, ConsoleColor.DarkGreen);
                             }
                         }
                         else
-                        { //No rigName, but don't replace it with DevFee, either.
+                        { //Don't worry about rigName, just replace the wallet.
                             redirector.m_replacedWallet = obj.@params[0];
                             if (obj.worker != null) redirector.m_displayName = obj.worker;
-                            obj.@params[0] = Program.settings.walletAddress;
+                            if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress;
                         }
 
                         string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
 
-                        lock (Logger.ConsoleBlockLock)
+                        if (Program.settings.replaceWallet)
                         {
-                            Logger.LogToConsole("Old Wallet: " + redirector.m_replacedWallet, redirector.m_endpoint, ConsoleColor.Yellow);
-                            Logger.LogToConsole("New Wallet: " + obj.@params[0], redirector.m_endpoint, ConsoleColor.Yellow);
+                            lock (Logger.ConsoleBlockLock)
+                            {
+                                Logger.LogToConsole("Old Wallet: " + redirector.m_replacedWallet, redirector.m_endpoint, ConsoleColor.Yellow);
+                                Logger.LogToConsole("New Wallet: " + obj.@params[0], redirector.m_endpoint, ConsoleColor.Yellow);
+                            }
+                        } 
+                        else
+                        {
+                            Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.m_displayName, obj.@params[0]));
                         }
 
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
