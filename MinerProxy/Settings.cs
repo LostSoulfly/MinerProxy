@@ -74,7 +74,7 @@ namespace MinerProxy
                 }
                 catch (Exception ex)
                 {
-                    IncorrectSettingsMessage(string.Format("Unable to load {0}", ex.Message), settings);
+                    IncorrectSettingsMessage(string.Format("Unable to load {0}", ex.Message), settings, settingsJson);
                     System.Environment.Exit(1);
                 }
             }
@@ -110,7 +110,7 @@ namespace MinerProxy
             settings.settingsFile = settingsJson;
 
             ConsoleColor color = ConsoleColor.Red;
-            Logger.LogToConsole("Unable to load settings: " + error, "ERROR", color);
+            Logger.LogToConsole(string.Format("Unable to load settings file {0}: {1}", settingsJson, error), "ERROR", color);
             Logger.LogToConsole("Would you like to update the current JSON to the newest settings? Y/N", "ERROR", color);
             string key = Console.ReadKey().Key.ToString();
             if (key == "Y")
