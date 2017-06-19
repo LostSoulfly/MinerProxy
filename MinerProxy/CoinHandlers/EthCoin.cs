@@ -10,7 +10,7 @@ namespace MinerProxy.CoinHandlers
 {
     class EthCoin
     {
-        static Redirector redirector;
+        internal Redirector redirector;
 
         public EthCoin(Redirector r)
         {

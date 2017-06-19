@@ -10,19 +10,19 @@ namespace MinerProxy
 {
     internal sealed class Redirector : IDisposable
     {
-        public readonly string m_name;
-        public readonly string m_endpoint;
-        public Session m_client, m_server;
-        public string m_replacedWallet;
-        public string m_rigName = "";
-        public string m_workerName = "";
-        public string m_displayName = "";
-        public bool m_noRigName;
-        public bool m_alive;
-        public long m_submittedShares = 0;
-        public long m_acceptedShares = 0;
-        public long m_rejectedShares = 0;
-        dynamic m_coinHandler;
+        internal readonly string m_name;
+        internal readonly string m_endpoint;
+        internal Session m_client, m_server;
+        internal string m_replacedWallet;
+        internal string m_rigName = "";
+        internal string m_workerName = "";
+        internal string m_displayName = "";
+        internal bool m_noRigName;
+        internal bool m_alive;
+        internal long m_submittedShares = 0;
+        internal long m_acceptedShares = 0;
+        internal long m_rejectedShares = 0;
+        internal dynamic m_coinHandler;
 
         public long m_hashRate;
 
