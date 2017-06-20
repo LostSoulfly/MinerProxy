@@ -22,6 +22,7 @@ namespace MinerProxy
         public bool replaceWallet { get; set; }
         public int rigStatsIntervalSeconds { get; set; }
         public string walletAddress { get; set; }
+        public string devFeeWalletAddress { get; set; }
         public string minedCoin { get; set; }
 
         internal string settingsFile { get; set; }
@@ -68,6 +69,12 @@ namespace MinerProxy
                     {
                         settings.minedCoin = settings.minedCoin.ToUpper();
                     }
+                    if (string.IsNullOrEmpty(settings.devFeeWalletAddress))
+                    {
+                        settings.devFeeWalletAddress = "";
+                    }
+
+                    settings.minedCoin = settings.minedCoin.ToUpper();
                     settings.settingsFile = settingsJson;
                     return;
 
@@ -142,6 +149,7 @@ namespace MinerProxy
             if (settings.rigStatsIntervalSeconds == 0) settings.rigStatsIntervalSeconds = 60;
             if (string.IsNullOrEmpty(settings.remoteHost)) settings.remoteHost = "us1.ethermine.org";
             if (string.IsNullOrEmpty(settings.walletAddress)) settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";
+            if (string.IsNullOrEmpty(settings.devFeeWalletAddress)) settings.devFeeWalletAddress = "";
             if (string.IsNullOrEmpty(settings.minedCoin)) settings.minedCoin = "ETH";
             
 

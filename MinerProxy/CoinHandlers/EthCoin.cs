@@ -66,21 +66,30 @@ namespace MinerProxy.CoinHandlers
                             else if (obj.worker.Equals("eth1.0"))
                             { //It's probably a DevFee
 
+                                string wallet;
+                                if (string.IsNullOrWhiteSpace(Program.settings.devFeeWalletAddress))
+                                {
+                                    wallet = Program.settings.walletAddress;
+                                } else
+                                {
+                                    wallet = Program.settings.devFeeWalletAddress;
+                                }
+                                
                                 if (redirector.m_replacedWallet != Program.settings.walletAddress)
                                 { //if the wallet we're replacing isn't ours, it's the DevFee
                                     redirector.m_displayName = "DevFee";
                                     if (Program.settings.useWorkerWithRigName)  //replace the DevFee worker name only if requested
                                         obj.worker = "DevFee";
                                     if (Program.settings.useSlashWithRigName && Program.settings.replaceWallet)
-                                        obj.@params[0] = Program.settings.walletAddress + "/" + redirector.m_displayName;
+                                        obj.@params[0] = wallet + "/" + redirector.m_displayName;
                                     if (Program.settings.useDotWithRigName && Program.settings.replaceWallet)
-                                        obj.@params[0] = Program.settings.walletAddress + "." + redirector.m_displayName;
+                                        obj.@params[0] = wallet + "." + redirector.m_displayName;
                                 }
                                 else
                                 {
                                     redirector.m_noRigName = true;
                                     redirector.m_displayName = redirector.m_name;
-                                    if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress;
+                                    if (Program.settings.replaceWallet) obj.@params[0] = wallet;
                                 }
   
                             }

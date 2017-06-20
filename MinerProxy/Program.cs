@@ -49,6 +49,8 @@ namespace MinerProxy
             if (Program.settings.replaceWallet)
             {
                 Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress);
+                if (!string.IsNullOrWhiteSpace(settings.devFeeWalletAddress))
+                    Logger.LogToConsole("Replacing DevFee wallets with " + settings.devFeeWalletAddress);
             }
             else
             {
