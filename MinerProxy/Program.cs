@@ -153,6 +153,7 @@ namespace MinerProxy
 
                     }
                 }
+                Thread.Sleep(1);
             }
         }
 
@@ -163,6 +164,8 @@ namespace MinerProxy
                 allDone.Reset();
                 listener.BeginAccept(new AsyncCallback(AcceptCallback), null);
                 allDone.WaitOne();
+
+                Thread.Sleep(1);
             }
         }
 
