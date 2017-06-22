@@ -6,6 +6,8 @@ using System.Timers;
 using MinerProxy.CoinHandlers;
 using MinerProxy.JsonProtocols;
 
+// NiceHash only for DaggerHashimoto (ETH) algorithm
+
 namespace MinerProxy.CoinHandlers
 {
     class NiceHash
