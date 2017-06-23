@@ -87,13 +87,13 @@ namespace MinerProxy
             }
             else
             {
-                Console.WriteLine("No {0} found! Generating generic one", settingsJson);
+                Logger.LogToConsole(string.Format("No {0} found! Generating generic one", settingsJson));
 
                 settings = GetGenericSettings(settings);
 
                 writeSettings(settingsJson, settings);
 
-                Console.WriteLine("Edit the new {0} file and don't forget to change the wallet address!", settingsJson);
+                Logger.LogToConsole(string.Format("Edit the new {0} file and don't forget to change the wallet address!", settingsJson));
                 Console.Write("Press any key to exit..");
                 Console.ReadKey();
                 System.Environment.Exit(1);
@@ -108,7 +108,7 @@ namespace MinerProxy
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Save settings error: {0}", ex.Message);
+                Logger.LogToConsole(("Save settings error: {0}", ex.Message));
             }
         }
 
@@ -163,8 +163,8 @@ namespace MinerProxy
 
             if (args.Length < 6 && args.Length > 1) //check if they're using command args
             {
-                Console.WriteLine("Usage : MinerProxy.exe <JsonFile>");
-                Console.WriteLine("MinerProxy.exe Ethermine.json");
+                Logger.LogToConsole("Usage : MinerProxy.exe <JsonFile>");
+                Logger.LogToConsole("MinerProxy.exe Ethermine.json");
                 System.Environment.Exit(1);
             }
             else if (args.Length == 1)
@@ -174,7 +174,7 @@ namespace MinerProxy
             }
             else if (args.Length >= 2) //if they are, and the args match the 6 we're looking for..
             {
-                Console.WriteLine("Command arguments are no longer accepted; pass a JSON file instead.");
+                Logger.LogToConsole("Command arguments are no longer accepted; pass a JSON file instead.");
                 Console.Write("Press any key to exit..");
                 Console.ReadKey();
                 System.Environment.Exit(1);

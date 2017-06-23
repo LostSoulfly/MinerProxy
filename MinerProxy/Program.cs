@@ -135,7 +135,7 @@ namespace MinerProxy
                             break;
 
                         case "Q":
-                            Console.WriteLine("Shutting down MinerProxy..");
+                            Logger.LogToConsole("Shutting down MinerProxy..");
                             System.Environment.Exit(0);
                             return;
 
