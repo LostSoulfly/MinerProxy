@@ -108,7 +108,7 @@ namespace MinerProxy
             }
             catch (Exception ex)
             {
-                Logger.LogToConsole(("Save settings error: {0}", ex.Message));
+                Logger.LogToConsole(string.Format("Save settings error: {0}", ex.Message));
             }
         }
 
