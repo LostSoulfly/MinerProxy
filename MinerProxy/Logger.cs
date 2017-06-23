@@ -19,7 +19,7 @@ namespace MinerProxy
         public static string logFileName;
         public static readonly object ConsoleColorLock = new object();
         public static readonly object ConsoleBlockLock = new object();
-
+        
         public static void MinerProxyHeader()
         {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -31,17 +31,22 @@ namespace MinerProxy
 
         public static void LogToConsole(string msg, string m_endpoint = "NONE", ConsoleColor color = ConsoleColor.White)
         {
-            lock (ConsoleColorLock)
-            {
-                if (Program.settings.colorizeConsole) Console.ForegroundColor = color;
+            string message;
+
+            
                 if (Program.settings.showEndpointInConsole)
                 {
-                    Console.WriteLine("[{0}] {1}: {2}", m_endpoint, DateTime.Now.ToLongTimeString(), msg);
+                    message = string.Format("[{0}] {1}: {2}", m_endpoint, DateTime.Now.ToLongTimeString(), msg);
                 }
                 else
                 {
-                    Console.WriteLine("{0}: {1}", DateTime.Now.ToLongTimeString(), msg);
+                    message = string.Format("{0}: {1}", DateTime.Now.ToLongTimeString(), msg);
                 }
+
+            lock (ConsoleColorLock)
+            {
+                if (Program.settings.colorizeConsole) Console.ForegroundColor = color;
+                Console.WriteLine(message);
                 if (Program.settings.colorizeConsole) Console.ResetColor();
             }
 
@@ -49,6 +54,9 @@ namespace MinerProxy
             {
                Program._logMessages.Add(new LogMessage(logFileName + ".txt", string.Format("[{0}] {1}: {2}", m_endpoint, DateTime.Now.ToLongTimeString(), msg)));
             }
+
+            Program._consoleQueue.Add(new ConsoleList(message, color));
+            
         }
     }
 }

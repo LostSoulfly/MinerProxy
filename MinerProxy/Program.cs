@@ -17,13 +17,13 @@ namespace MinerProxy
         public static Settings settings;
         
         public static BlockingCollection<LogMessage> _logMessages = new BlockingCollection<LogMessage>();
+        public static SlidingBuffer<ConsoleList> _consoleQueue = new SlidingBuffer<ConsoleList>(15);
 
         private static Socket listener;
         private static ManualResetEvent allDone;
 
         static void Main(string[] args)
         {
-
             Logger.MinerProxyHeader();
 
             // Load and process settings in the Settings class
@@ -152,7 +152,6 @@ namespace MinerProxy
                                 Logger.LogToConsole("Q key: Quit MinerProxy", "HELP", ConsoleColor.Yellow);
                             }
                                 break;
-
                     }
                 }
                 Thread.Sleep(1);

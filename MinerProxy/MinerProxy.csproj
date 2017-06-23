@@ -74,6 +74,7 @@
     <Compile Include="BufferPool.cs" />
     <Compile Include="CoinHandlers\EthCoin.cs" />
     <Compile Include="CoinHandlers\NiceHash.cs" />
+    <Compile Include="ConsoleList.cs" />
     <Compile Include="JsonProtocols\SiaProtocol.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="LogMessage.cs" />
