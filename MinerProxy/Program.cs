@@ -5,6 +5,11 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using MinerProxy.Web;
+using MinerProxy.Logging;
+using WebSocketSharp.Server;
+using System.Collections.Generic;
+using MinerProxy.Network;
 
 //try to move the logging blocking collection into this class
 //then just initialize it once and have every thread add to it, instead of making a new thread
@@ -18,7 +23,9 @@ namespace MinerProxy
         
         public static BlockingCollection<LogMessage> _logMessages = new BlockingCollection<LogMessage>();
         public static SlidingBuffer<ConsoleList> _consoleQueue = new SlidingBuffer<ConsoleList>(15);
+        public static List<MinerStats> _minerStats = new List<MinerStats>();
 
+        public static HttpServer webSock;
         private static Socket listener;
         private static ManualResetEvent allDone;
 
@@ -56,7 +63,26 @@ namespace MinerProxy
             {
                 Logger.LogToConsole("Not replacing Wallets");
             }
-            
+
+            //initialize webSock
+            if (Program.settings.useWebSockServer)
+            {
+                try
+                {
+                    webSock = new HttpServer(settings.webSocketPort);
+                    webSock.RootPath = Directory.GetCurrentDirectory() + "\\web\\";     //double slashes necessary to escape the slashes
+                    if (settings.debug) Logger.LogToConsole(string.Format("Web root: {0}", webSock.RootPath));
+
+                    webSock.OnGet += new EventHandler<HttpRequestEventArgs>(Web.WebIndex.OnGet);
+                    webSock.AddWebSocketService<WebIndex>("/");
+                    webSock.AddWebSocketService<WebConsole>("/console");
+                    webSock.Start();
+                    Logger.LogToConsole(string.Format("WebSockServer listening on port {0}", settings.webSocketPort));
+                } catch (Exception ex)
+                {
+                    Logger.LogToConsole(string.Format("Unable to start WebSocketServer on port {0}. Error: {1}", settings.webSocketPort, ex.Message));
+                }
+            }
 
             try
             {
@@ -156,6 +182,11 @@ namespace MinerProxy
                 }
                 Thread.Sleep(1);
             }
+        }
+
+        private static void WebSock_OnGet(object sender, HttpRequestEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private static void listenerStart()

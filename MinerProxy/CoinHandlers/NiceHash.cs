@@ -2,9 +2,8 @@
 using System.Text;
 using System.Net.Sockets;
 using Newtonsoft.Json;
-using System.Timers;
-using MinerProxy.CoinHandlers;
-using MinerProxy.JsonProtocols;
+using MinerProxy.Logging;
+using MinerProxy.Network;
 
 // NiceHash only for DaggerHashimoto (ETH) algorithm
 

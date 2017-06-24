@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using MinerProxy.Logging;
 
 namespace MinerProxy
 {
@@ -10,6 +11,7 @@ namespace MinerProxy
         public int localPort { get; set; }
         public string remoteHost { get; set; }
         public int remotePort { get; set; }
+        public int webSocketPort { get; set; }
         public bool log { get; set; }
         public bool debug { get; set; }
         public bool identifyDevFee { get; set; }
@@ -20,6 +22,7 @@ namespace MinerProxy
         public bool useWorkerWithRigName { get; set; }
         public bool colorizeConsole { get; set; }
         public bool replaceWallet { get; set; }
+        public bool useWebSockServer { get; set; }
         public int rigStatsIntervalSeconds { get; set; }
         public string walletAddress { get; set; }
         public string devFeeWalletAddress { get; set; }
@@ -56,6 +59,10 @@ namespace MinerProxy
                     if (settings.allowedAddresses.Count == 0)
                     {
                         IncorrectSettingsMessage("No allowed addresses!", settings, settingsJson);
+                    }
+                    if (settings.useWebSockServer && settings.webSocketPort == 0)
+                    {
+                        IncorrectSettingsMessage("WebSock enabled, but no port set!", settings, settingsJson);
                     }
                     if (string.IsNullOrEmpty(settings.walletAddress))
                     {
@@ -144,8 +151,10 @@ namespace MinerProxy
             settings.showRigStats = true;
             settings.colorizeConsole = true;
             settings.replaceWallet = true;
+            settings.useWebSockServer = true;
             if (settings.localPort == 0) settings.localPort = 9000;
             if (settings.remotePort == 0) settings.remotePort = 4444;
+            if (settings.webSocketPort == 0) settings.webSocketPort = 9091;
             if (settings.rigStatsIntervalSeconds == 0) settings.rigStatsIntervalSeconds = 60;
             if (string.IsNullOrEmpty(settings.remoteHost)) settings.remoteHost = "us1.ethermine.org";
             if (string.IsNullOrEmpty(settings.walletAddress)) settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";

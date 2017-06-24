@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MinerProxy.Logging;
+using MinerProxy.Network;
 
 namespace MinerProxy.CoinHandlers
 {
