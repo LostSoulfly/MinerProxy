@@ -15,9 +15,7 @@ namespace MinerProxy.Network
         internal dynamic m_coinHandler;
 
         internal MinerStats thisMiner;
-
-
-
+        
         public Timer statusUpdateTimer;
 
         private void OnStatusUpdate(object source, ElapsedEventArgs e)

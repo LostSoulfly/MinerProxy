@@ -33,7 +33,7 @@ namespace MinerProxy.Web
                 string output = null;
                 foreach (ConsoleList cl in queue)
                 {
-                    output += string.Format("<font color={0}>" + cl.message + "</font>" + "<br>\n", cl.color.ToString());
+                    output += string.Format("<font face = \"Lucida Console\" color={0}>" + cl.message + "</font>" + "<br>\n", cl.color.ToString());
                 }
                 resp.WriteContent(Encoding.UTF8.GetBytes(body + output + footer));
                 return;
