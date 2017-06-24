@@ -75,10 +75,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Miners\MinerManager.cs" />
     <Compile Include="Network\BufferPool.cs" />
     <Compile Include="CoinHandlers\EthCoin.cs" />
     <Compile Include="CoinHandlers\NiceHash.cs" />
-    <Compile Include="MinerStats.cs" />
+    <Compile Include="Miners\MinerStats.cs" />
     <Compile Include="Web\ConsoleList.cs" />
     <Compile Include="JsonProtocols\SiaProtocol.cs" />
     <Compile Include="Logging\Logger.cs" />

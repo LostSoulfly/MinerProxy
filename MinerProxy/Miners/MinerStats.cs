@@ -4,25 +4,40 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinerProxy
+namespace MinerProxy.Miners
 {
+
     class MinerStats
     {
         public long submittedShares { get; set; }
         public long acceptedShares { get; set; }
         public long rejectedShares { get; set; }
+        public long hashrate { get; set; }
+        public string rigName { get; set; }
+        public string endPoint { get; set; }
+        public string replacedWallet { get; set; }
+        public string connectionName { get; set; }
+        public string workerName { get; set; }
+        public string displayName { get; set; }
+        public bool connectionAlive { get; set; }
+        public bool noRigName { get; set; }
+        public DateTime connectionStartTime;
+        public DateTime lastCalculatedTime;
+    }
+
+    class MinerStatsFull : MinerStats
+    {
+        
         public long numberOfConnects { get; set; }
-        public readonly string rigName;
-        public string lastEndpoint { get; set; }
-        //string wallet { get; set; }
-        internal Queue<double> hashrateAverage;
-        public readonly DateTime firstConnectTime;
         public DateTime totalTimeConnected;
+        public readonly DateTime firstConnectTime;
+
+        internal Queue<double> hashrateAverage;
+
         private int queueLimit = 60; // last x number of hashes to average, large number for smoother average
 
-        public MinerStats(string rigName)
+        public MinerStatsFull()
         {
-            this.rigName = rigName;
             this.firstConnectTime = DateTime.Now;   // this is readonly, so we set this at initialization
         }
 

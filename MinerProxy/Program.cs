@@ -10,6 +10,7 @@ using MinerProxy.Logging;
 using WebSocketSharp.Server;
 using System.Collections.Generic;
 using MinerProxy.Network;
+using MinerProxy.Miners;
 
 //try to move the logging blocking collection into this class
 //then just initialize it once and have every thread add to it, instead of making a new thread
