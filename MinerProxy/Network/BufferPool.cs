@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace MinerProxy
+namespace MinerProxy.Network
 {
     internal sealed class BufferPool
     {

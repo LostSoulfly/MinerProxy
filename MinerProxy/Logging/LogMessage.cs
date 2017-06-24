@@ -1,5 +1,5 @@
 ﻿
-namespace MinerProxy
+namespace MinerProxy.Logging
 {
     class LogMessage
     {
