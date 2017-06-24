@@ -22,7 +22,7 @@ namespace MinerProxy
         public static Settings settings;
         
         public static BlockingCollection<LogMessage> _logMessages = new BlockingCollection<LogMessage>();
-        public static SlidingBuffer<ConsoleList> _consoleQueue = new SlidingBuffer<ConsoleList>(15);
+        public static SlidingBuffer<ConsoleList> _consoleQueue = new SlidingBuffer<ConsoleList>(50);
         public static List<MinerStats> _minerStats = new List<MinerStats>();
 
         public static HttpServer webSock;
