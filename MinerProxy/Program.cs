@@ -71,6 +71,7 @@ namespace MinerProxy
                 {
                     webSock = new HttpServer(settings.webSocketPort);
                     webSock.RootPath = Directory.GetCurrentDirectory() + "\\web\\";     //double slashes necessary to escape the slashes
+                    Directory.CreateDirectory(webSock.RootPath);
                     if (settings.debug) Logger.LogToConsole(string.Format("Web root: {0}", webSock.RootPath));
 
                     webSock.OnGet += new EventHandler<HttpRequestEventArgs>(Web.WebIndex.OnGet);
