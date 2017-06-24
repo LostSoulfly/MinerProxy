@@ -12,7 +12,7 @@ namespace MinerProxy.CoinHandlers
     {
         internal void ChangeRigName(Redirector redirector)
         {
-            redirector.m_rigName = "test";
+            //redirector.m_rigName = "test";
         }
         
     }
