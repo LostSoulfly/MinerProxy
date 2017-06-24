@@ -27,6 +27,9 @@ namespace MinerProxy.Logging
 
             Console.WriteLine(asciiLogo + version);
             Console.WriteLine(credits + '\n');
+
+            Program._consoleQueue.Add(new ConsoleList("MinerProxy v" + version, ConsoleColor.White));
+            Program._consoleQueue.Add(new ConsoleList(credits, ConsoleColor.White));
         }
 
         public static void LogToConsole(string msg, string m_endpoint = "NONE", ConsoleColor color = ConsoleColor.White)
