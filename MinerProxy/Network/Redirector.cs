@@ -5,98 +5,87 @@ using System.Timers;
 using MinerProxy.CoinHandlers;
 using MinerProxy.JsonProtocols;
 using MinerProxy.Logging;
+using MinerProxy.Miners;
 
 namespace MinerProxy.Network
 {
     internal sealed class Redirector : IDisposable
     {
-        internal readonly string m_name;
-        internal readonly string m_endpoint;
         internal Session m_client, m_server;
-        internal string m_replacedWallet;
-        internal string m_rigName = "";
-        internal string m_workerName = "";
-        internal string m_displayName = "";
-        internal bool m_noRigName;
-        internal bool m_alive;
-        internal long m_submittedShares = 0;
-        internal long m_acceptedShares = 0;
-        internal long m_rejectedShares = 0;
         internal dynamic m_coinHandler;
 
-        public long m_hashRate;
+        internal MinerStats thisMiner;
 
-        public DateTime m_connectionStartTime;
-        public DateTime m_lastCalculatedTime;
 
-        public Timer m_statusUpdateTimer;
+
+        public Timer statusUpdateTimer;
 
         private void OnStatusUpdate(object source, ElapsedEventArgs e)
         {
             DateTime timeNow = DateTime.Now;
-            TimeSpan timeSpan = (timeNow - m_connectionStartTime);
-            TimeSpan calculatedSpan = (timeNow - m_lastCalculatedTime);     //determine how long it's been since the last cycle
-            m_lastCalculatedTime = DateTime.Now;                            //set the lastCalc time to now, so we can do it again next time
-
-
+            TimeSpan timeSpan = (timeNow - thisMiner.connectionStartTime);
+            TimeSpan calculatedSpan = (timeNow - thisMiner.lastCalculatedTime);     //determine how long it's been since the last cycle
+            thisMiner.lastCalculatedTime = DateTime.Now;                            //set the lastCalc time to now, so we can do it again next time
+            
 
             if (!Program.settings.showRigStats)
                 return;
 
             double hours = timeSpan.TotalHours;
             double minutes = timeSpan.TotalMinutes;
-            double sharesPerMinute = (m_submittedShares / minutes);
+            double sharesPerMinute = (thisMiner.submittedShares / minutes);
             double sharesPerMinuteTruncated = Math.Truncate(sharesPerMinute * 100) / 100;
-            double sharesPerHour = (m_submittedShares / hours);
+            double sharesPerHour = (thisMiner.submittedShares / hours);
             double sharesPerHourTruncated = Math.Truncate(sharesPerHour * 100) / 100;
             ConsoleColor color;
 
             lock (Logger.ConsoleBlockLock)
             {
-                Logger.LogToConsole(string.Format(m_displayName + "'s status update: "), m_endpoint, ConsoleColor.Cyan);
+                Logger.LogToConsole(string.Format(thisMiner.displayName + "'s status update: "), thisMiner.endPoint, ConsoleColor.Cyan);
 
                 color = ConsoleColor.DarkCyan;
                 if (Program.settings.minedCoin != "NICEHASH") // Nicehash doesn't report hashrate
-                    Logger.LogToConsole(string.Format("Hashrate: {0}", m_hashRate.ToString("#,##0,Mh/s").Replace(",", ".")), m_endpoint, color);
+                    Logger.LogToConsole(string.Format("Hashrate: {0}", thisMiner.hashrate.ToString("#,##0,Mh/s").Replace(",", ".")), thisMiner.endPoint, color);
 
-                if (m_submittedShares != m_acceptedShares) //No reason to show if they match, save space with multiple rigs
-                    Logger.LogToConsole(string.Format("Found shares: {0}", m_submittedShares), m_endpoint, color);
+                if (thisMiner.submittedShares != thisMiner.acceptedShares) //No reason to show if they match, save space with multiple rigs
+                    Logger.LogToConsole(string.Format("Found shares: {0}", thisMiner.submittedShares), thisMiner.endPoint, color);
 
-                Logger.LogToConsole(string.Format("Accepted shares: {0}", m_acceptedShares), m_endpoint, color);
-                if (m_rejectedShares > 0) Logger.LogToConsole(string.Format("Rejected shares: {0}", m_rejectedShares), m_endpoint, color);
-                Logger.LogToConsole(string.Format("Time connected: {0}", timeSpan.ToString("hh\\:mm")), m_endpoint, color);
-                Logger.LogToConsole(string.Format("Shares per minute: {0}", string.Format("{0:N2}", sharesPerMinuteTruncated)), m_endpoint, color);
-                Logger.LogToConsole(string.Format("Shares per hour: {0}", string.Format("{0:N2}", sharesPerHourTruncated)), m_endpoint, color);
+                Logger.LogToConsole(string.Format("Accepted shares: {0}", thisMiner.acceptedShares), thisMiner.endPoint, color);
+                if (thisMiner.rejectedShares > 0) Logger.LogToConsole(string.Format("Rejected shares: {0}", thisMiner.rejectedShares), thisMiner.endPoint, color);
+                Logger.LogToConsole(string.Format("Time connected: {0}", timeSpan.ToString("hh\\:mm")), thisMiner.endPoint, color);
+                Logger.LogToConsole(string.Format("Shares per minute: {0}", string.Format("{0:N2}", sharesPerMinuteTruncated)), thisMiner.endPoint, color);
+                Logger.LogToConsole(string.Format("Shares per hour: {0}", string.Format("{0:N2}", sharesPerHourTruncated)), thisMiner.endPoint, color);
             }
         }
 
         public Redirector(Socket client, string ip, int port)
         {
             SetupCoinHandler();
+            thisMiner = new MinerStats();
 
-            m_name = client.RemoteEndPoint.ToString();
-            m_connectionStartTime = DateTime.Now;
+            thisMiner.connectionName = client.RemoteEndPoint.ToString();
+            thisMiner.connectionStartTime = DateTime.Now;
 
-            m_statusUpdateTimer = new Timer();
-            m_statusUpdateTimer.Elapsed += new ElapsedEventHandler(OnStatusUpdate);
+            statusUpdateTimer = new Timer();
+            statusUpdateTimer.Elapsed += new ElapsedEventHandler(OnStatusUpdate);
 
             if ((Program.settings.rigStatsIntervalSeconds) > 0 && (Program.settings.rigStatsIntervalSeconds <= 3600))
             {
-                m_statusUpdateTimer.Interval = Program.settings.rigStatsIntervalSeconds * 1000;
+                statusUpdateTimer.Interval = Program.settings.rigStatsIntervalSeconds * 1000;
             }
             else
             {
-                m_statusUpdateTimer.Interval = 60000;
+                statusUpdateTimer.Interval = 60000;
             }
-            m_statusUpdateTimer.Enabled = true;
+            statusUpdateTimer.Enabled = true;
 
-            int index = m_name.IndexOf(":");
-            m_endpoint = m_name.Substring(0, index);
-            m_endpoint = m_endpoint + "_" + m_name.Substring(index + 1);
+            int index = thisMiner.connectionName.IndexOf(":");
+            thisMiner.endPoint = thisMiner.connectionName.Substring(0, index);
+            thisMiner.endPoint = thisMiner.endPoint + "_" + thisMiner.connectionName.Substring(index + 1);
 
-            Logger.LogToConsole(string.Format("Session started: ({0})", m_name),  m_endpoint, ConsoleColor.DarkGreen);
+            Logger.LogToConsole(string.Format("Session started: ({0})", thisMiner.connectionName),  thisMiner.endPoint, ConsoleColor.DarkGreen);
 
-            m_alive = false;
+            thisMiner.connectionAlive = false;
             
             m_client = new Session(client);
             m_client.OnDataReceived = OnClientPacket;
@@ -118,7 +107,7 @@ namespace MinerProxy.Network
                 m_server.OnDataReceived = OnServerPacket;
                 m_server.OnDisconnected = Dispose;
 
-                m_alive = true;
+                thisMiner.connectionAlive = true;
 
                 m_server.Receive();
                 m_client.Receive();
@@ -126,8 +115,8 @@ namespace MinerProxy.Network
             catch (SocketException se)
             {
                 m_client.Dispose();
-                m_statusUpdateTimer.Enabled = false;
-                Logger.LogToConsole(string.Format("Connection bridge failed with {0} ({1})",se.ErrorCode,m_name),  m_endpoint, ConsoleColor.Red);
+                statusUpdateTimer.Enabled = false;
+                Logger.LogToConsole(string.Format("Connection bridge failed with {0} ({1})",se.ErrorCode,thisMiner.connectionName),  thisMiner.endPoint, ConsoleColor.Red);
             }
         }
 
@@ -169,6 +158,24 @@ namespace MinerProxy.Network
                     break;
 
             }
+        }
+
+        internal void SubmittedShare()
+        {
+            thisMiner.submittedShares++;
+            //todo: add to MinerStats global list
+        }
+
+        internal void RejectedShare()
+        {
+            thisMiner.rejectedShares++;
+            //todo: add to MinerStats global list
+        }
+
+        internal void AcceptedShare()
+        {
+            thisMiner.acceptedShares++;
+            //todo: add to MinerStats global list
         }
 
         private void OnServerPacket(byte[] buffer,int length)
@@ -261,9 +268,9 @@ namespace MinerProxy.Network
 
         public void Dispose()
         {
-            if (m_alive)
+            if (thisMiner.connectionAlive)
             {
-                m_alive = false;
+                thisMiner.connectionAlive = false;
 
                 if (m_client != null)
                     m_client.Dispose();
@@ -271,8 +278,8 @@ namespace MinerProxy.Network
                 if (m_server != null)
                     m_server.Dispose();
 
-                Logger.LogToConsole(string.Format("Closing session: ({0})", m_name),  m_endpoint);
-                m_statusUpdateTimer.Enabled = false;
+                Logger.LogToConsole(string.Format("Closing session: ({0})", thisMiner.connectionName),  thisMiner.endPoint);
+                statusUpdateTimer.Enabled = false;
             }
         }
     }

@@ -32,35 +32,38 @@ namespace MinerProxy.CoinHandlers
                 switch (obj.id)
                 {
                     case 2: //eth_submitLogin
-                        Logger.LogToConsole("Ethereum Login detected!", redirector.m_endpoint, ConsoleColor.DarkGreen);
+                        Logger.LogToConsole("Ethereum Login detected!", redirector.thisMiner.endPoint, ConsoleColor.DarkGreen);
                         madeChanges = true;
                         if (obj.@params[0].Contains(".") && Program.settings.useDotWithRigName)
                         {//There is likely a rigName in the wallet address.
 
-                            redirector.m_replacedWallet = obj.@params[0];
-                            redirector.m_rigName = obj.@params[0].Substring(obj.@params[0].IndexOf(".") + 1);
-                            redirector.m_displayName = redirector.m_rigName;
-                            if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress + "." + redirector.m_rigName;
+                            redirector.thisMiner.replacedWallet = obj.@params[0];
+                            redirector.thisMiner.rigName = obj.@params[0].Substring(obj.@params[0].IndexOf(".") + 1);
+                            redirector.thisMiner.displayName = redirector.thisMiner.rigName;
+                            if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress + "." + redirector.thisMiner.rigName;
                         }
                         else if (obj.@params[0].Contains("/") && Program.settings.useSlashWithRigName)
                         {//There is likely different rigname, may need to check for email addresses here as well
-                            redirector.m_replacedWallet = obj.@params[0];
-                            redirector.m_rigName = obj.@params[0].Substring(obj.@params[0].IndexOf("/") + 1);
-                            redirector.m_displayName = redirector.m_rigName;
-                            if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress + "/" + redirector.m_rigName;
+                            redirector.thisMiner.replacedWallet = obj.@params[0];
+                            redirector.thisMiner.rigName = obj.@params[0].Substring(obj.@params[0].IndexOf("/") + 1);
+                            redirector.thisMiner.displayName = redirector.thisMiner.rigName;
+                            if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress + "/" + redirector.thisMiner.rigName;
                         }
                         else if (Program.settings.identifyDevFee)
                         { //there is no rigName, so we just replace the wallet
-                            redirector.m_replacedWallet = obj.@params[0];
+                            redirector.thisMiner.replacedWallet = obj.@params[0];
 
-                            if (redirector.m_replacedWallet != Program.settings.walletAddress)
-                                redirector.m_displayName = "DevFee";
+                            if (!Program.settings.useDotWithRigName && Program.settings.debug && redirector.thisMiner.replacedWallet.Contains("."))
+                                Logger.LogToConsole("Wallet address contains a rigName, but useDotWithRigName is false");
+
+                            if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress)
+                                redirector.thisMiner.displayName = "DevFee";
 
                             if (obj.worker == null)
                             {
                                 //if rigName exists, add the rigname to the new wallet, else just use wallet
                                 if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress;
-                                redirector.m_noRigName = true;
+                                redirector.thisMiner.noRigName = true;
                             }
                             else if (obj.worker.Equals("eth1.0"))
                             { //It's probably a DevFee
@@ -74,20 +77,20 @@ namespace MinerProxy.CoinHandlers
                                     wallet = Program.settings.devFeeWalletAddress;
                                 }
                                 
-                                if (redirector.m_replacedWallet != Program.settings.walletAddress)
+                                if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress)
                                 { //if the wallet we're replacing isn't ours, it's the DevFee
-                                    redirector.m_displayName = "DevFee";
+                                    redirector.thisMiner.displayName = "DevFee";
                                     if (Program.settings.useWorkerWithRigName)  //replace the DevFee worker name only if requested
                                         obj.worker = "DevFee";
                                     if (Program.settings.useSlashWithRigName && Program.settings.replaceWallet)
-                                        obj.@params[0] = wallet + "/" + redirector.m_displayName;
+                                        obj.@params[0] = wallet + "/" + redirector.thisMiner.displayName;
                                     if (Program.settings.useDotWithRigName && Program.settings.replaceWallet)
-                                        obj.@params[0] = wallet + "." + redirector.m_displayName;
+                                        obj.@params[0] = wallet + "." + redirector.thisMiner.displayName;
                                 }
                                 else
                                 {
-                                    redirector.m_noRigName = true;
-                                    redirector.m_displayName = redirector.m_name;
+                                    redirector.thisMiner.noRigName = true;
+                                    redirector.thisMiner.displayName = redirector.thisMiner.connectionName;
                                     if (Program.settings.replaceWallet) obj.@params[0] = wallet;
                                 }
   
@@ -96,17 +99,17 @@ namespace MinerProxy.CoinHandlers
                             {
                                 if (Program.settings.useWorkerWithRigName)
                                 {
-                                    redirector.m_displayName = obj.worker;
-                                    redirector.m_workerName = obj.worker;
+                                    redirector.thisMiner.displayName = obj.worker;
+                                    redirector.thisMiner.workerName = obj.worker;
                                 }
                                 if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress;
-                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Worker: {0}", redirector.m_workerName), redirector.m_endpoint, ConsoleColor.DarkGreen);
+                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Worker: {0}", redirector.thisMiner.workerName), redirector.thisMiner.endPoint, ConsoleColor.DarkGreen);
                             }
                         }
                         else
                         { //Don't worry about rigName, just replace the wallet.
-                            redirector.m_replacedWallet = obj.@params[0];
-                            if (obj.worker != null) redirector.m_displayName = obj.worker;
+                            redirector.thisMiner.replacedWallet = obj.@params[0];
+                            if (obj.worker != null) redirector.thisMiner.displayName = obj.worker;
                             if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress;
                         }
 
@@ -116,13 +119,13 @@ namespace MinerProxy.CoinHandlers
                         {
                             lock (Logger.ConsoleBlockLock)
                             {
-                                Logger.LogToConsole("Old Wallet: " + redirector.m_replacedWallet, redirector.m_endpoint, ConsoleColor.Yellow);
-                                Logger.LogToConsole("New Wallet: " + obj.@params[0], redirector.m_endpoint, ConsoleColor.Yellow);
+                                Logger.LogToConsole("Old Wallet: " + redirector.thisMiner.replacedWallet, redirector.thisMiner.endPoint, ConsoleColor.Yellow);
+                                Logger.LogToConsole("New Wallet: " + obj.@params[0], redirector.thisMiner.endPoint, ConsoleColor.Yellow);
                             }
                         } 
                         else
                         {
-                            Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.m_displayName, obj.@params[0]));
+                            Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.thisMiner.displayName, obj.@params[0]));
                         }
 
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
@@ -131,20 +134,20 @@ namespace MinerProxy.CoinHandlers
                         break;
 
                     case 3: //eth_getWork
-                        if (Program.settings.debug) Logger.LogToConsole("eth_getWork from Client.", redirector.m_endpoint);
+                        if (Program.settings.debug) Logger.LogToConsole("eth_getWork from Client.", redirector.thisMiner.endPoint);
                         break;
 
                     case 4: //eth_submitWork
-                        redirector.m_submittedShares++;
-                        Logger.LogToConsole(string.Format(redirector.m_displayName + " found a share. [{0} shares found]", redirector.m_submittedShares), redirector.m_endpoint, ConsoleColor.Green);
+                        redirector.thisMiner.submittedShares++;
+                        Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + " found a share. [{0} shares found]", redirector.thisMiner.submittedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
                         break;
 
                     case 6: //eth_submitHashrate
                         long hashrate = Convert.ToInt64(obj.@params[0], 16);
-                        redirector.m_hashRate = hashrate;
+                        redirector.thisMiner.hashrate = hashrate;
                         if (Program.settings.debug)
                         {
-                            Logger.LogToConsole(string.Format("Hashrate reported by {0}: {1}", redirector.m_displayName, hashrate.ToString("#,##0,Mh/s").Replace(",", ".")), redirector.m_endpoint, ConsoleColor.Magenta);
+                            Logger.LogToConsole(string.Format("Hashrate reported by {0}: {1}", redirector.thisMiner.displayName, hashrate.ToString("#,##0,Mh/s").Replace(",", ".")), redirector.thisMiner.endPoint, ConsoleColor.Magenta);
                         }
                         break;
 
@@ -153,11 +156,11 @@ namespace MinerProxy.CoinHandlers
                         {
                             lock (Logger.ConsoleBlockLock)
                             {
-                                Logger.LogToConsole("From Client >---->", redirector.m_endpoint);
-                                Logger.LogToConsole("Unknown ID: " + obj.id, redirector.m_endpoint);
-                                Logger.LogToConsole("Method: " + obj.method, redirector.m_endpoint);
-                                Logger.LogToConsole("Param Count: " + obj.@params.Count, redirector.m_endpoint);
-                                Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint);
+                                Logger.LogToConsole("From Client >---->", redirector.thisMiner.endPoint);
+                                Logger.LogToConsole("Unknown ID: " + obj.id, redirector.thisMiner.endPoint);
+                                Logger.LogToConsole("Method: " + obj.method, redirector.thisMiner.endPoint);
+                                Logger.LogToConsole("Param Count: " + obj.@params.Count, redirector.thisMiner.endPoint);
+                                Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.thisMiner.endPoint);
                             }
                         }
                         break;
@@ -168,20 +171,20 @@ namespace MinerProxy.CoinHandlers
             catch (Exception ex)
             {
                 madeChanges = false;
-                Logger.LogToConsole(ex.Message, redirector.m_endpoint);
-                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint, ConsoleColor.Red);
+                Logger.LogToConsole(ex.Message, redirector.thisMiner.endPoint);
+                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length), redirector.thisMiner.endPoint, ConsoleColor.Red);
             }
 
-            if (redirector.m_alive && redirector.m_server.Disposed == false)
+            if (redirector.thisMiner.connectionAlive && redirector.m_server.Disposed == false)
             {
                 if (madeChanges == false)
                 {
-                    //Logger.LogToConsole("Sending buffer: " + Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint);
+                    //Logger.LogToConsole("Sending buffer: " + Encoding.UTF8.GetString(buffer, 0, length), redirector.thisMiner.endpoint);
                     redirector.m_server.Send(buffer, length);
                 }
                 else
                 {
-                    //Logger.LogToConsole("Sending modified buffer: " + Encoding.UTF8.GetString(newBuffer, 0, newLength), redirector.m_endpoint);
+                    //Logger.LogToConsole("Sending modified buffer: " + Encoding.UTF8.GetString(newBuffer, 0, newLength), redirector.thisMiner.endpoint);
                     redirector.m_server.Send(newBuffer, newLength);
                 }
             }
@@ -205,11 +208,11 @@ namespace MinerProxy.CoinHandlers
 
                         case 3:
                             if (Program.settings.debug)
-                                Logger.LogToConsole("eth_getWork from server.", redirector.m_endpoint);
+                                Logger.LogToConsole("eth_getWork from server.", redirector.thisMiner.endPoint);
                             break;
 
                         case 4:
-                            Logger.LogToConsole("Share accepted?", redirector.m_endpoint, ConsoleColor.Green);
+                            Logger.LogToConsole("Share accepted?", redirector.thisMiner.endPoint, ConsoleColor.Green);
                             break;
 
                         default:
@@ -217,10 +220,10 @@ namespace MinerProxy.CoinHandlers
                             {
                                 lock (Logger.ConsoleBlockLock)
                                 {
-                                    Logger.LogToConsole("From Server1 <----<", redirector.m_endpoint, ConsoleColor.Gray);
-                                    Logger.LogToConsole("Unknown ID: " + obj.id, redirector.m_endpoint, ConsoleColor.Gray);
-                                    Logger.LogToConsole("Param Count: " + obj.result.Count, redirector.m_endpoint, ConsoleColor.Gray);
-                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint, ConsoleColor.Gray);
+                                    Logger.LogToConsole("From Server1 <----<", redirector.thisMiner.endPoint, ConsoleColor.Gray);
+                                    Logger.LogToConsole("Unknown ID: " + obj.id, redirector.thisMiner.endPoint, ConsoleColor.Gray);
+                                    Logger.LogToConsole("Param Count: " + obj.result.Count, redirector.thisMiner.endPoint, ConsoleColor.Gray);
+                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.thisMiner.endPoint, ConsoleColor.Gray);
                                 }
                             }
                             break;
@@ -234,13 +237,13 @@ namespace MinerProxy.CoinHandlers
 
                         if ((obj.error != null) && obj.result.Equals(null))
                         {
-                            Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), redirector.m_displayName, obj.error.code, obj.error.message), redirector.m_endpoint, ConsoleColor.Red);
+                            Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), redirector.thisMiner.displayName, obj.error.code, obj.error.message), redirector.thisMiner.endPoint, ConsoleColor.Red);
                         }
                         else if (!obj.result.Equals(null))
                         {
                             if (obj.result == false)
                             {
-                                Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), redirector.m_displayName, obj.error.code, obj.error.message), redirector.m_endpoint, ConsoleColor.Red);
+                                Logger.LogToConsole(string.Format(("Server error for {0}: {1} {2}"), redirector.thisMiner.displayName, obj.error.code, obj.error.message), redirector.thisMiner.endPoint, ConsoleColor.Red);
                             }
                         }
 
@@ -249,31 +252,31 @@ namespace MinerProxy.CoinHandlers
                             case 2:
                                 if (obj.result == true)
                                 {
-                                    Logger.LogToConsole("Stratum Authorization success: " + redirector.m_displayName, redirector.m_endpoint, ConsoleColor.DarkGreen);
+                                    Logger.LogToConsole("Stratum Authorization success: " + redirector.thisMiner.displayName, redirector.thisMiner.endPoint, ConsoleColor.DarkGreen);
                                 }
                                 else
                                 {
-                                    Logger.LogToConsole("eth_SubmitLogin failed!", redirector.m_endpoint, ConsoleColor.Red);
+                                    Logger.LogToConsole("eth_SubmitLogin failed!", redirector.thisMiner.endPoint, ConsoleColor.Red);
                                 }
                                 break;
 
                             case 4:
                                 if (obj.result == true)
                                 {
-                                    redirector.m_acceptedShares++;
+                                    redirector.thisMiner.acceptedShares++;
 
-                                    Logger.LogToConsole(string.Format(redirector.m_displayName + "'s share got accepted. [{0} shares accepted]", redirector.m_acceptedShares), redirector.m_endpoint, ConsoleColor.Green);
+                                    Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got accepted. [{0} shares accepted]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
 
                                 }
                                 else if (obj.result == false)
                                 {
-                                    redirector.m_rejectedShares++;
-                                    Logger.LogToConsole(string.Format(redirector.m_displayName + "'s share got rejected. [{0} shares rejected]", redirector.m_acceptedShares), redirector.m_endpoint, ConsoleColor.Red);
+                                    redirector.thisMiner.rejectedShares++;
+                                    Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
                                 }
                                 break;
 
                             case 6:
-                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Hashrate accepted: {0}", obj.result), redirector.m_endpoint, ConsoleColor.DarkGreen);
+                                if (Program.settings.debug) Logger.LogToConsole(string.Format("Hashrate accepted: {0}", obj.result), redirector.thisMiner.endPoint, ConsoleColor.DarkGreen);
                                 break;
 
                             default:
@@ -281,10 +284,10 @@ namespace MinerProxy.CoinHandlers
                                 {
                                     lock (Logger.ConsoleBlockLock)
                                     {
-                                        Logger.LogToConsole("From Server2 <----<", redirector.m_endpoint);
-                                        Logger.LogToConsole("Unknown ID: " + obj.id, redirector.m_endpoint);
-                                        Logger.LogToConsole("Result: " + obj.result, redirector.m_endpoint);
-                                        Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint);
+                                        Logger.LogToConsole("From Server2 <----<", redirector.thisMiner.endPoint);
+                                        Logger.LogToConsole("Unknown ID: " + obj.id, redirector.thisMiner.endPoint);
+                                        Logger.LogToConsole("Result: " + obj.result, redirector.thisMiner.endPoint);
+                                        Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.thisMiner.endPoint);
                                     }
                                 }
                                 break;
@@ -299,17 +302,17 @@ namespace MinerProxy.CoinHandlers
                             if (obj.error != null && obj.error.Length > 0)
                             {
                                 if (obj.result == false)
-                                    Logger.LogToConsole(string.Format(("Server error for {0}: {1}"), redirector.m_displayName, obj.error), redirector.m_endpoint, ConsoleColor.Red);
+                                    Logger.LogToConsole(string.Format(("Server error for {0}: {1}"), redirector.thisMiner.displayName, obj.error), redirector.thisMiner.endPoint, ConsoleColor.Red);
                             }
                             else
                             {
                                 lock (Logger.ConsoleBlockLock)
                                 {
-                                    Logger.LogToConsole(ex2.ToString(), redirector.m_endpoint);
-                                    Logger.LogToConsole("From Server3 <----<", redirector.m_endpoint);
-                                    Logger.LogToConsole("ID: " + obj.id, redirector.m_endpoint);
-                                    Logger.LogToConsole("Result: " + obj.result, redirector.m_endpoint);
-                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint);
+                                    Logger.LogToConsole(ex2.ToString(), redirector.thisMiner.endPoint);
+                                    Logger.LogToConsole("From Server3 <----<", redirector.thisMiner.endPoint);
+                                    Logger.LogToConsole("ID: " + obj.id, redirector.thisMiner.endPoint);
+                                    Logger.LogToConsole("Result: " + obj.result, redirector.thisMiner.endPoint);
+                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.thisMiner.endPoint);
                                 }
                             }
                         }
@@ -319,8 +322,8 @@ namespace MinerProxy.CoinHandlers
                             {
                                 lock (Logger.ConsoleBlockLock)
                                 {
-                                    Logger.LogToConsole(ex3.ToString(), redirector.m_endpoint);
-                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint);
+                                    Logger.LogToConsole(ex3.ToString(), redirector.thisMiner.endPoint);
+                                    Logger.LogToConsole(Encoding.UTF8.GetString(buffer, 0, length), redirector.thisMiner.endPoint);
                                 }
                             }
                         }
@@ -329,11 +332,11 @@ namespace MinerProxy.CoinHandlers
             }
             catch (Exception ex)
             {
-                Logger.LogToConsole(ex.ToString(), redirector.m_endpoint);
-                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length), redirector.m_endpoint, ConsoleColor.Red);
+                Logger.LogToConsole(ex.ToString(), redirector.thisMiner.endPoint);
+                if (Program.settings.debug) Logger.LogToConsole("Json Err: " + Encoding.UTF8.GetString(buffer, 0, length), redirector.thisMiner.endPoint, ConsoleColor.Red);
             }
 
-            if (redirector.m_alive && redirector.m_client.Disposed == false)
+            if (redirector.thisMiner.connectionAlive && redirector.m_client.Disposed == false)
                 redirector.m_client.Send(buffer, length);
 
             if (Program.settings.log)
