@@ -32,12 +32,13 @@ namespace MinerProxy.Miners
         public DateTime totalTimeConnected;
         public readonly DateTime firstConnectTime;
 
-        internal Queue<double> hashrateAverage;
+        private  Queue<double> hashrateAverage = new Queue<double>();
 
         private int queueLimit = 60; // last x number of hashes to average, large number for smoother average
 
-        public MinerStatsFull()
+        public MinerStatsFull(string displayName)
         {
+            this.displayName = displayName;
             this.firstConnectTime = DateTime.Now;   // this is readonly, so we set this at initialization
         }
 
@@ -49,7 +50,7 @@ namespace MinerProxy.Miners
             this.hashrateAverage.Enqueue(hashrate); // add the new hashrate
         }
 
-        public string GetAverageHashrate()
+        internal string GetAverageHashrate()
         {
             try
             {

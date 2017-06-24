@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using MinerProxy.JsonProtocols;
 using MinerProxy.Logging;
 using MinerProxy.Network;
+using MinerProxy.Miners;
 
 namespace MinerProxy.CoinHandlers
 {
