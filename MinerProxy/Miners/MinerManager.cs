@@ -57,7 +57,18 @@ namespace MinerProxy.Miners
             }
         }
 
-        public static void AddHashrate(string displayName, long hashrate)
+        public static void AddHashrate(string displayName, long hashrate, bool setHashrate = true)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName);
+                if (minerIndex < 0) return;
+                Program._minerStats[minerIndex].AddHashrate(hashrate);
+                if (setHashrate) Program._minerStats[minerIndex].hashrate = hashrate;
+            }
+        }
+
+        public static void SetHashrate(string displayName, long hashrate)
         {
             lock (MinerManagerLock)
             {
