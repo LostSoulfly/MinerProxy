@@ -148,7 +148,7 @@ namespace MinerProxy.CoinHandlers
                         case 4: //Share
                             if ((bool)dyn.result)
                             {
-                                redirector.SubmittedShare();
+                                redirector.AcceptedShare();
                                 Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got accepted. [{0} shares accepted]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
                             }
                             else
