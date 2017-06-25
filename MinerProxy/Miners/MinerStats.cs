@@ -12,7 +12,7 @@ namespace MinerProxy.Miners
         public long submittedShares { get; set; }
         public long acceptedShares { get; set; }
         public long rejectedShares { get; set; }
-        public long hashrate { get; set; }
+        public double hashrate { get; set; }
         public string rigName { get; set; }
         public string endPoint { get; set; }
         public string replacedWallet { get; set; }
@@ -27,9 +27,9 @@ namespace MinerProxy.Miners
 
     class MinerStatsFull : MinerStats
     {
-        
+        // public List<string> minerWallets;    //keep a list of all the miner's wallets, useful for DevFee wallet collection
         public long numberOfConnects { get; set; }
-        public DateTime totalTimeConnected;
+        public TimeSpan totalTimeConnected;
         public readonly DateTime firstConnectTime;
 
         private  Queue<double> hashrateAverage = new Queue<double>();
@@ -66,12 +66,7 @@ namespace MinerProxy.Miners
 
         public void AddConnectedTime(TimeSpan ts)
         {
-            this.totalTimeConnected = this.totalTimeConnected + ts;
-        }
-
-        public string GetStats()
-        {
-            return "miner stats";
+            this.totalTimeConnected.Add(totalTimeConnected);
         }
     }
 }
