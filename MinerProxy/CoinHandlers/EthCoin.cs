@@ -128,14 +128,8 @@ namespace MinerProxy.CoinHandlers
                         {
                             Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.thisMiner.displayName, obj.@params[0]));
                         }
-
-                        MinerManager.AddNewMiner(redirector.thisMiner.displayName);
-                        MinerManager.SetConnectionStartTime(redirector.thisMiner.displayName, redirector.thisMiner.connectionStartTime);
-                        MinerManager.SetWorkerName(redirector.thisMiner.displayName, redirector.thisMiner.workerName);
-                        MinerManager.SetRigName(redirector.thisMiner.displayName, redirector.thisMiner.rigName);
-                        MinerManager.SetEndpoint(redirector.thisMiner.displayName, redirector.thisMiner.endPoint);
-                        MinerManager.SetConnectionName(redirector.thisMiner.displayName, redirector.thisMiner.connectionName);
-                        MinerManager.AddConnectionCount(redirector.thisMiner.displayName);
+                        
+                        redirector.SetupMinerStats();
 
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                         newLength = tempBuffer.Length;
