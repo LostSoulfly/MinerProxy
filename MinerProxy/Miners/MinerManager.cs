@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MinerProxy.Miners
 {
@@ -60,8 +61,108 @@ namespace MinerProxy.Miners
             lock (MinerManagerLock)
             {
                 int minerIndex = GetMinerIndex(displayName, minerList);
-                if (minerIndex < 0) return "NO MINER FOUND";
+                if (minerIndex < 0) return null;
                 return minerList[minerIndex].GetAverageHashrate();
+            }
+        }
+
+        public static DateTime GetTotalTimeConnected(string displayName, List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName, minerList);
+                if (minerIndex < 0) return DateTime.MinValue;
+                return minerList[minerIndex].totalTimeConnected;
+            }
+        }
+
+        public static int GetNumberOfSessions(string displayName, List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName, minerList);
+                if (minerIndex < 0) return 0;
+                return minerList[minerIndex].numberOfSessions;
+            }
+        }
+
+        public static DateTime GetFirstTimeConnected(string displayName, List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName, minerList);
+                if (minerIndex < 0) return DateTime.MinValue;
+                return minerList[minerIndex].firstConnectTime;
+            }
+        }
+
+        public static bool IsConnectionAlive(string displayName, List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName, minerList);
+                if (minerIndex < 0) return false;
+                return minerList[minerIndex].connectionAlive;
+            }
+        }
+
+        public static string GetWorkerName(string displayName, List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName, minerList);
+                if (minerIndex < 0) return null;
+                return minerList[minerIndex].workerName;
+            }
+        }
+
+        public static string GetLastHashrate(string displayName, List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName, minerList);
+                if (minerIndex < 0) return "0 MH/s";
+                return minerList[minerIndex].hashrate.ToString("#,##0,Mh/s").Replace(",", ".");
+            }
+        }
+
+        public static long GetAcceptedShares(string displayName, List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName, minerList);
+                if (minerIndex < 0) return 0;
+                return minerList[minerIndex].acceptedShares;
+            }
+        }
+
+        public static long GetRejectedShares(string displayName, List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName, minerList);
+                if (minerIndex < 0) return 0;
+                return minerList[minerIndex].submittedShares;
+            }
+        }
+
+        public static long GetSubmittedShares(string displayName, List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName, minerList);
+                if (minerIndex < 0) return 0;
+                return minerList[minerIndex].submittedShares;
+            }
+        }
+
+
+        public static List<string> GetMiners(List<MinerStatsFull> minerList)
+        {
+            lock (MinerManagerLock)
+            {
+                List<string> miners = minerList.Select(m => m.displayName).ToList();
+                return miners;
             }
         }
 
