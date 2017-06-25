@@ -152,7 +152,7 @@ namespace MinerProxy.CoinHandlers
                         break;
 
                     case 6: //eth_submitHashrate
-                        double hashrate = Convert.ToDouble(obj.@params[0]);
+                        long hashrate = Convert.ToInt64(obj.@params[0], 16);
                         redirector.thisMiner.hashrate = hashrate;
                         MinerManager.AddHashrate(redirector.thisMiner.displayName, redirector.thisMiner.hashrate);
 

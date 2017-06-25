@@ -57,7 +57,7 @@ namespace MinerProxy.Miners
             }
         }
 
-        public static void AddHashrate(string displayName, double hashrate)
+        public static void AddHashrate(string displayName, long hashrate)
         {
             lock (MinerManagerLock)
             {

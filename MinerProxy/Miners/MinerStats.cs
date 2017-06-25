@@ -12,7 +12,7 @@ namespace MinerProxy.Miners
         public long submittedShares { get; set; }
         public long acceptedShares { get; set; }
         public long rejectedShares { get; set; }
-        public double hashrate { get; set; }
+        public long hashrate { get; set; }
         public string rigName { get; set; }
         public string endPoint { get; set; }
         public string replacedWallet { get; set; }
