@@ -20,8 +20,9 @@ namespace MinerProxy.Web
 
             if (path == "/")
                 path += "index.html";
-
-            if (path.Contains("...")){  //prevent directory traversal attacks
+            
+            if (path.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
+            {  //prevent directory traversal attacks
                 resp.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
