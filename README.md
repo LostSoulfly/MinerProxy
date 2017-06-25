@@ -1,3 +1,9 @@
+## Help Wanted
+Javascript/HTML developer.
+
+I've started looking into creating a WebSocket console with JavaScript and a jQuery Terminal Emulator.
+But JavaScript is very foreign to me, so it's been a big slowdown.
+
 # MinerProxy
 
 ![Screenshot](Screens/Screen.PNG)
