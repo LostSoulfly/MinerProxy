@@ -91,6 +91,8 @@ namespace MinerProxy.CoinHandlers
                                     Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.thisMiner.displayName, wallet));
                                 }
 
+                                redirector.SetupMinerStats();
+
                                 newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                                 newLength = tempBuffer.Length;
                             }
