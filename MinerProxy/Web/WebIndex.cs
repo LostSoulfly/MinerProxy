@@ -21,6 +21,11 @@ namespace MinerProxy.Web
             if (path == "/")
                 path += "index.html";
 
+            if (path.Contains("...")){  //prevent directory traversal attacks
+                resp.StatusCode = (int)HttpStatusCode.NotFound;
+                return;
+            }
+
             if (path.Contains("console"))
             {
 
