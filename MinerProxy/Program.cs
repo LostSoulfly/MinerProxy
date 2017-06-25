@@ -179,7 +179,6 @@ namespace MinerProxy
                                 Console.WriteLine("Miner connectionName: {0}", _minerStats[i].connectionName);
                                 Console.WriteLine("Miner firstConnectTime: {0}", _minerStats[i].firstConnectTime.ToString());
                                 Console.WriteLine("Miner connectionStartTime: {0}", _minerStats[i].connectionStartTime.ToString());
-                                Console.WriteLine("Miner totalTimeConnected: {0} minutes", _minerStats[i].totalTimeConnected.TotalMinutes);
                                 Console.WriteLine("Miner totalTimeConnected: {0}", _minerStats[i].totalTimeConnected.ToString());
                                 Console.WriteLine("Miner submittedShares: {0}", _minerStats[i].submittedShares);
                                 Console.WriteLine("Miner acceptedShares: {0}", _minerStats[i].acceptedShares);
