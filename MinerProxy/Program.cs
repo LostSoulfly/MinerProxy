@@ -188,6 +188,11 @@ namespace MinerProxy
                             }
                             break;
 
+                        case "X":
+                                File.WriteAllText("MinerStats.json", Newtonsoft.Json.JsonConvert.SerializeObject(_minerStats, Newtonsoft.Json.Formatting.Indented));
+                            Logger.LogToConsole("Exported MinerStats to MinerStats.json");
+                            break;
+
                         case "H":
                             lock (Logger.ConsoleBlockLock)
                             {
