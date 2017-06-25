@@ -27,7 +27,7 @@ namespace MinerProxy.Miners
 
     class MinerStatsFull : MinerStats
     {
-        // public List<string> minerWallets;    //keep a list of all the miner's wallets, useful for DevFee wallet collection
+        public List<string> minerWallets = new List<string>();    //keep a list of all the miner's wallets, useful for DevFee wallet collection
         public long numberOfConnects { get; set; }
         public TimeSpan totalTimeConnected;
         public readonly DateTime firstConnectTime;

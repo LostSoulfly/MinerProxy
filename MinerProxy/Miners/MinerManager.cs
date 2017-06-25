@@ -57,6 +57,29 @@ namespace MinerProxy.Miners
             }
         }
 
+        public static void AddMinerWallet(string displayName, string wallet)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName);
+                if (minerIndex < 0) return;
+
+                if (!Program._minerStats[minerIndex].minerWallets.Contains(wallet))
+                    Program._minerStats[minerIndex].minerWallets.Add(wallet);
+            }
+        }
+
+        public static List<string> GetMinerWallets(string displayName)
+        {
+            lock (MinerManagerLock)
+            {
+                int minerIndex = GetMinerIndex(displayName);
+                if (minerIndex < 0) return null;
+
+                return Program._minerStats[minerIndex].minerWallets.ToList();
+            }
+        }
+
         public static void AddHashrate(string displayName, long hashrate, bool setHashrate = true)
         {
             lock (MinerManagerLock)

@@ -192,6 +192,7 @@ namespace MinerProxy.Network
             MinerManager.SetConnectionName(thisMiner.displayName, thisMiner.connectionName);
             MinerManager.AddConnectionCount(thisMiner.displayName);
             MinerManager.SetConnectionAlive(thisMiner.displayName, true);
+            MinerManager.AddMinerWallet(thisMiner.displayName, thisMiner.replacedWallet);
         }
 
         private void OnServerPacket(byte[] buffer,int length)
