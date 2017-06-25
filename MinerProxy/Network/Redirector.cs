@@ -190,6 +190,7 @@ namespace MinerProxy.Network
             MinerManager.SetEndpoint(thisMiner.displayName, thisMiner.endPoint);
             MinerManager.SetConnectionName(thisMiner.displayName, thisMiner.connectionName);
             MinerManager.AddConnectionCount(thisMiner.displayName);
+            MinerManager.SetConnectionAlive(thisMiner.displayName, true);
         }
 
         private void OnServerPacket(byte[] buffer,int length)
