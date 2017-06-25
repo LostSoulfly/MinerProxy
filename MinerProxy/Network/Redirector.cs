@@ -63,6 +63,7 @@ namespace MinerProxy.Network
 
             thisMiner.connectionName = client.RemoteEndPoint.ToString();
             thisMiner.connectionStartTime = DateTime.Now;
+            thisMiner.lastCalculatedTime = DateTime.Now;
 
             statusUpdateTimer = new Timer();
             statusUpdateTimer.Elapsed += new ElapsedEventHandler(OnStatusUpdate);

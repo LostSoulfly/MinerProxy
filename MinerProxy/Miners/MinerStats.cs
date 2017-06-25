@@ -40,9 +40,11 @@ namespace MinerProxy.Miners
         {
             if (!string.IsNullOrEmpty(this.displayName))    //don't try to initialize again
                 return;
-
+            if (Program.settings.debug)
+                Logging.Logger.LogToConsole(string.Format("Initializing MinerStatsFull for {0}", displayName));
             this.displayName = displayName;
-            this.firstConnectTime = DateTime.Now;   // this is readonly, so we set this at initialization
+            this.firstConnectTime = DateTime.Now;
+            this.totalTimeConnected = TimeSpan.Zero;
         }
 
         public void AddHashrate(double hashrate)
@@ -69,8 +71,7 @@ namespace MinerProxy.Miners
 
         public void AddConnectedTime(TimeSpan ts)
         {
-            this.totalTimeConnected.Add(totalTimeConnected);
-            Console.WriteLine("totalTimeConnected: " + totalTimeConnected.TotalSeconds);
+            totalTimeConnected = totalTimeConnected.Add(ts);
         }
     }
 }
