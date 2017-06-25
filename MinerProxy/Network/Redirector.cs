@@ -181,6 +181,17 @@ namespace MinerProxy.Network
             //todo: add to MinerStats global list
         }
 
+        internal void SetupMinerStats()
+        {
+            MinerManager.AddNewMiner(thisMiner.displayName);
+            MinerManager.SetConnectionStartTime(thisMiner.displayName, thisMiner.connectionStartTime);
+            MinerManager.SetWorkerName(thisMiner.displayName, thisMiner.workerName);
+            MinerManager.SetRigName(thisMiner.displayName, thisMiner.rigName);
+            MinerManager.SetEndpoint(thisMiner.displayName, thisMiner.endPoint);
+            MinerManager.SetConnectionName(thisMiner.displayName, thisMiner.connectionName);
+            MinerManager.AddConnectionCount(thisMiner.displayName);
+        }
+
         private void OnServerPacket(byte[] buffer,int length)
         {
             // Is it slow comparing strings every packet?
