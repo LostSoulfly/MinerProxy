@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using MinerProxy.Logging;
+﻿using System.Collections.Generic;
 using WebSocketSharp.Net;
 using WebSocketSharp.Server;
 using System.Text;

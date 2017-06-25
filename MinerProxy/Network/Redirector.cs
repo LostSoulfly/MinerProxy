@@ -3,7 +3,6 @@ using System.Text;
 using System.Net.Sockets;
 using System.Timers;
 using MinerProxy.CoinHandlers;
-using MinerProxy.JsonProtocols;
 using MinerProxy.Logging;
 using MinerProxy.Miners;
 

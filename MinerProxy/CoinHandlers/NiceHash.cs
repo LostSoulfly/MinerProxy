@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Net.Sockets;
 using Newtonsoft.Json;
 using MinerProxy.Logging;
 using MinerProxy.Network;
