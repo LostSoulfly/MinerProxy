@@ -66,23 +66,23 @@ namespace MinerProxy.Miners
             }
         }
 
-        public static DateTime GetTotalTimeConnected(string displayName, List<MinerStatsFull> minerList)
+        public static TimeSpan GetTotalTimeConnected(string displayName, List<MinerStatsFull> minerList)
         {
             lock (MinerManagerLock)
             {
                 int minerIndex = GetMinerIndex(displayName, minerList);
-                if (minerIndex < 0) return DateTime.MinValue;
+                if (minerIndex < 0) return TimeSpan.MinValue;
                 return minerList[minerIndex].totalTimeConnected;
             }
         }
 
-        public static int GetNumberOfSessions(string displayName, List<MinerStatsFull> minerList)
+        public static long GetNumberOfSessions(string displayName, List<MinerStatsFull> minerList)
         {
             lock (MinerManagerLock)
             {
                 int minerIndex = GetMinerIndex(displayName, minerList);
                 if (minerIndex < 0) return 0;
-                return minerList[minerIndex].numberOfSessions;
+                return minerList[minerIndex].numberOfConnects;
             }
         }
 
