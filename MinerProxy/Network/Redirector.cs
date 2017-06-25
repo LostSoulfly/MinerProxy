@@ -24,7 +24,7 @@ namespace MinerProxy.Network
             TimeSpan timeSpan = (timeNow - thisMiner.connectionStartTime);
             TimeSpan calculatedSpan = (timeNow - thisMiner.lastCalculatedTime);     //determine how long it's been since the last cycle
             thisMiner.lastCalculatedTime = DateTime.Now;                            //set the lastCalc time to now, so we can do it again next time
-            
+            MinerManager.AddConnectedTime(thisMiner.displayName, calculatedSpan);
 
             if (!Program.settings.showRigStats)
                 return;
@@ -84,6 +84,7 @@ namespace MinerProxy.Network
             Logger.LogToConsole(string.Format("Session started: ({0})", thisMiner.connectionName),  thisMiner.endPoint, ConsoleColor.DarkGreen);
 
             thisMiner.connectionAlive = false;
+            MinerManager.SetConnectionAlive(thisMiner.displayName, thisMiner.connectionAlive);
             
             m_client = new Session(client);
             m_client.OnDataReceived = OnClientPacket;
@@ -106,6 +107,7 @@ namespace MinerProxy.Network
                 m_server.OnDisconnected = Dispose;
 
                 thisMiner.connectionAlive = true;
+                MinerManager.SetConnectionAlive(thisMiner.displayName, thisMiner.connectionAlive);
 
                 m_server.Receive();
                 m_client.Receive();
@@ -161,18 +163,21 @@ namespace MinerProxy.Network
         internal void SubmittedShare()
         {
             thisMiner.submittedShares++;
+            MinerManager.AddSubmittedShare(thisMiner.displayName);
             //todo: add to MinerStats global list
         }
 
         internal void RejectedShare()
         {
             thisMiner.rejectedShares++;
+            MinerManager.AddRejectedShare(thisMiner.displayName);
             //todo: add to MinerStats global list
         }
 
         internal void AcceptedShare()
         {
             thisMiner.acceptedShares++;
+            MinerManager.AddAcceptedShare(thisMiner.displayName);
             //todo: add to MinerStats global list
         }
 
@@ -269,6 +274,7 @@ namespace MinerProxy.Network
             if (thisMiner.connectionAlive)
             {
                 thisMiner.connectionAlive = false;
+                MinerManager.SetConnectionAlive(thisMiner.displayName, thisMiner.connectionAlive);
 
                 if (m_client != null)
                     m_client.Dispose();
