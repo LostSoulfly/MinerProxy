@@ -129,6 +129,14 @@ namespace MinerProxy.CoinHandlers
                             Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.thisMiner.displayName, obj.@params[0]));
                         }
 
+                        MinerManager.AddNewMiner(redirector.thisMiner.displayName);
+                        MinerManager.SetConnectionStartTime(redirector.thisMiner.displayName, redirector.thisMiner.connectionStartTime);
+                        MinerManager.SetWorkerName(redirector.thisMiner.displayName, redirector.thisMiner.workerName);
+                        MinerManager.SetRigName(redirector.thisMiner.displayName, redirector.thisMiner.rigName);
+                        MinerManager.SetEndpoint(redirector.thisMiner.displayName, redirector.thisMiner.endPoint);
+                        MinerManager.SetConnectionName(redirector.thisMiner.displayName, redirector.thisMiner.connectionName);
+                        MinerManager.AddConnectionCount(redirector.thisMiner.displayName);
+
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                         newLength = tempBuffer.Length;
 
@@ -139,13 +147,15 @@ namespace MinerProxy.CoinHandlers
                         break;
 
                     case 4: //eth_submitWork
-                        redirector.thisMiner.submittedShares++;
+                        redirector.SubmittedShare();
                         Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + " found a share. [{0} shares found]", redirector.thisMiner.submittedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
                         break;
 
                     case 6: //eth_submitHashrate
-                        long hashrate = Convert.ToInt64(obj.@params[0], 16);
+                        double hashrate = Convert.ToDouble(obj.@params[0]);
                         redirector.thisMiner.hashrate = hashrate;
+                        MinerManager.AddHashrate(redirector.thisMiner.displayName, redirector.thisMiner.hashrate);
+
                         if (Program.settings.debug)
                         {
                             Logger.LogToConsole(string.Format("Hashrate reported by {0}: {1}", redirector.thisMiner.displayName, hashrate.ToString("#,##0,Mh/s").Replace(",", ".")), redirector.thisMiner.endPoint, ConsoleColor.Magenta);
@@ -264,14 +274,14 @@ namespace MinerProxy.CoinHandlers
                             case 4:
                                 if (obj.result == true)
                                 {
-                                    redirector.thisMiner.acceptedShares++;
+                                    redirector.AcceptedShare();
 
                                     Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got accepted. [{0} shares accepted]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
 
                                 }
                                 else if (obj.result == false)
                                 {
-                                    redirector.thisMiner.rejectedShares++;
+                                    redirector.RejectedShare();
                                     Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
                                 }
                                 break;
