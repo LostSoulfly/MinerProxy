@@ -167,6 +167,27 @@ namespace MinerProxy
                             System.Environment.Exit(0);
                             return;
 
+                        case "M":
+                            for (int i = 0; i < _minerStats.Count; i++)
+                            {
+                                Console.WriteLine("Miner displayName: {0}", _minerStats[i].displayName);
+                                Console.WriteLine("Miner workerName: {0}", _minerStats[i].workerName);
+                                Console.WriteLine("Miner rigName: {0}", _minerStats[i].rigName);
+                                Console.WriteLine("Miner numberOfConnects: {0}", _minerStats[i].numberOfConnects);
+                                Console.WriteLine("Miner connectionAlive: {0}", _minerStats[i].connectionAlive);
+                                Console.WriteLine("Miner endPoint: {0}", _minerStats[i].endPoint);
+                                Console.WriteLine("Miner connectionName: {0}", _minerStats[i].connectionName);
+                                Console.WriteLine("Miner firstConnectTime: {0}", _minerStats[i].firstConnectTime.ToString());
+                                Console.WriteLine("Miner connectionStartTime: {0}", _minerStats[i].connectionStartTime.ToString());
+                                Console.WriteLine("Miner totalTimeConnected: {0} minutes", _minerStats[i].totalTimeConnected.TotalMinutes);
+                                Console.WriteLine("Miner submittedShares: {0}", _minerStats[i].submittedShares);
+                                Console.WriteLine("Miner acceptedShares: {0}", _minerStats[i].acceptedShares);
+                                Console.WriteLine("Miner rejectedShares: {0}", _minerStats[i].rejectedShares);
+                                Console.WriteLine("Miner hashrate: {0}", _minerStats[i].hashrate);
+                                Console.WriteLine("Miner GetAverageHashrate: {0}", _minerStats[i].GetAverageHashrate());
+                            }
+                            break;
+
                         case "H":
                             lock (Logger.ConsoleBlockLock)
                             {
