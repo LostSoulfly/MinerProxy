@@ -38,6 +38,9 @@ namespace MinerProxy.Miners
 
         public MinerStatsFull(string displayName)
         {
+            if (!string.IsNullOrEmpty(this.displayName))    //don't try to initialize again
+                return;
+
             this.displayName = displayName;
             this.firstConnectTime = DateTime.Now;   // this is readonly, so we set this at initialization
         }
@@ -67,6 +70,7 @@ namespace MinerProxy.Miners
         public void AddConnectedTime(TimeSpan ts)
         {
             this.totalTimeConnected.Add(totalTimeConnected);
+            Console.WriteLine("totalTimeConnected: " + totalTimeConnected.TotalSeconds);
         }
     }
 }
