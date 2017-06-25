@@ -63,7 +63,7 @@ namespace MinerProxy.Miners
             {
                 int minerIndex = GetMinerIndex(displayName);
                 if (minerIndex < 0) return;
-                Program._minerStats[minerIndex].AddHashrate(hashrate);
+                Program._minerStats[minerIndex].hashrate = hashrate;
             }
         }
 
