@@ -15,16 +15,9 @@ namespace MinerProxy.Web
             var resp = e.Response;
             var path = req.RawUrl;
 
-
             if (path == "/")
                 path += "index.html";
             
-            if (path.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
-            {  //prevent directory traversal attacks
-                resp.StatusCode = (int)HttpStatusCode.NotFound;
-                return;
-            }
-
             if (path.Contains("console"))
             {
 
@@ -40,6 +33,14 @@ namespace MinerProxy.Web
                     output += string.Format("<font face = \"Lucida Console\" color={0}>" + cl.message + "</font>" + "<br>\n", cl.color.ToString());
                 }
                 resp.WriteContent(Encoding.UTF8.GetBytes(body + output + footer));
+                return;
+            }
+
+            if ((path.IndexOfAny(new char[] { '*', '&', '#', '~', '^', '\\', '\0'}) >= 0) | path.Contains("..") == true)
+            {  //prevent directory traversal attacks
+                if (Program.settings.debug)
+                    Logging.Logger.LogToConsole(string.Format("Http InvalidChars 404: {0} by {1}", path, e.Request.RemoteEndPoint));
+                resp.StatusCode = (int)HttpStatusCode.NotFound;
                 return;
             }
 
