@@ -54,7 +54,13 @@ namespace MinerProxy.CoinHandlers
                                 Logger.LogToConsole("Old Wallet: " + redirector.thisMiner.replacedWallet, redirector.thisMiner.endPoint, ConsoleColor.Yellow);
                                 Logger.LogToConsole("New Wallet: " + obj.@params.login, redirector.thisMiner.endPoint, ConsoleColor.Yellow);
 
-                                redirector.thisMiner.displayName = redirector.thisMiner.endPoint;
+                                if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress && Program.settings.identifyDevFee)
+                                {
+                                    redirector.thisMiner.displayName = "DevFee";
+                                } else
+                                {
+                                    redirector.thisMiner.displayName = redirector.thisMiner.endPoint;
+                                }
                                 redirector.SetupMinerStats();
                                 string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
                                 newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
@@ -145,7 +151,7 @@ namespace MinerProxy.CoinHandlers
                                     {
                                         Logger.LogToConsole("From Server1 <----<", redirector.thisMiner.endPoint, ConsoleColor.Gray);
                                         Logger.LogToConsole("ID: " + obj.id, redirector.thisMiner.endPoint, ConsoleColor.Gray);
-                                        Logger.LogToConsole("ID: " + obj.result.id, redirector.thisMiner.endPoint, ConsoleColor.Gray);
+                                        Logger.LogToConsole("Result ID: " + obj.result.id, redirector.thisMiner.endPoint, ConsoleColor.Gray);
                                         Logger.LogToConsole("Result Status: " + obj.result.status, redirector.thisMiner.endPoint, ConsoleColor.Gray);
                                         Logger.LogToConsole("Status: " + obj.result.status, redirector.thisMiner.endPoint, ConsoleColor.Gray);
                                         Logger.LogToConsole("JsonRPC: " + obj.jsonrpc, redirector.thisMiner.endPoint, ConsoleColor.Gray);
