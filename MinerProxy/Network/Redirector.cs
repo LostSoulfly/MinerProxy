@@ -190,6 +190,9 @@ namespace MinerProxy.Network
 
         internal void SetupMinerStats()
         {
+            if (string.IsNullOrEmpty(thisMiner.displayName))
+                thisMiner.displayName = thisMiner.rigName;
+
             MinerManager.AddNewMiner(thisMiner.displayName);
             MinerManager.SetConnectionStartTime(thisMiner.displayName, thisMiner.connectionStartTime);
             MinerManager.SetWorkerName(thisMiner.displayName, thisMiner.workerName);

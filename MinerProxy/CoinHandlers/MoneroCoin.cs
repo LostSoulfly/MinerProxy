@@ -40,7 +40,6 @@ namespace MinerProxy.CoinHandlers
                             {
                                 madeChanges = true;
                                 redirector.thisMiner.replacedWallet = obj.@params.login;
-                                redirector.thisMiner.rigName = obj.@params.agent;
 
                                 if (!string.IsNullOrEmpty(Program.settings.devFeeWalletAddress))
                                 {   //if the devFee wallet is not empty, let's replace it
@@ -56,11 +55,19 @@ namespace MinerProxy.CoinHandlers
 
                                 if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress && Program.settings.identifyDevFee)
                                 {
-                                    redirector.thisMiner.displayName = "DevFee";
+                                    redirector.thisMiner.rigName = "DevFee";
+                                }
+                                else if(Program.settings.usePasswordAsRigName)
+                                {
+                                    redirector.thisMiner.rigName = obj.@params.pass;
+                                    obj.@params.pass = "x";
                                 } else
                                 {
-                                    redirector.thisMiner.displayName = redirector.thisMiner.endPoint;
+                                    redirector.thisMiner.rigName = redirector.thisMiner.endPoint;
                                 }
+
+                                
+
                                 redirector.SetupMinerStats();
                                 string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
                                 newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
@@ -134,14 +141,14 @@ namespace MinerProxy.CoinHandlers
                     {
 
                     case 0: //new job?
-                        Logger.LogToConsole("New Job?");
+                        Logger.LogToConsole("New Job?", redirector.thisMiner.endPoint);
                         break;
 
                     case 1:
                         switch (obj.method)
                         {
                             case "job":
-                                Logger.LogToConsole("New Job from server");
+                                Logger.LogToConsole("New Job from server", redirector.thisMiner.endPoint);
                                 break;
 
                             default:
@@ -165,7 +172,7 @@ namespace MinerProxy.CoinHandlers
                         switch (obj.result.status)
                         {
                             case "OK":
-                                Logger.LogToConsole("Server returned OK");
+                                Logger.LogToConsole("Server returned OK", redirector.thisMiner.endPoint);
                                 break;
                         }
                         break;

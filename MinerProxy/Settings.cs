@@ -23,6 +23,7 @@ namespace MinerProxy
         public bool colorizeConsole { get; set; }
         public bool replaceWallet { get; set; }
         public bool useWebSockServer { get; set; }
+        public bool usePasswordAsRigName { get; set; }
         public int rigStatsIntervalSeconds { get; set; }
         public string walletAddress { get; set; }
         public string devFeeWalletAddress { get; set; }
@@ -151,6 +152,7 @@ namespace MinerProxy
             settings.showRigStats = true;
             settings.colorizeConsole = true;
             settings.replaceWallet = true;
+            settings.usePasswordAsRigName = false;
             settings.useWebSockServer = true;
             if (settings.localPort == 0) settings.localPort = 9000;
             if (settings.remotePort == 0) settings.remotePort = 4444;
