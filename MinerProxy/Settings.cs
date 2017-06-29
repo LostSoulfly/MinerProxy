@@ -231,6 +231,9 @@ namespace MinerProxy
                 case "NICEHASH":
                     return true;
 
+                case "XMR":
+                    return true;
+
                 case "TCP":
                     return true;
 

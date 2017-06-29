@@ -157,6 +157,10 @@ namespace MinerProxy.Network
                     m_coinHandler = new NiceHash(this);
                     break;
 
+                case "XMR":
+                    m_coinHandler = new MoneroCoin(this);
+                    break;
+
                 case "TCP":
                     break;
 
@@ -235,6 +239,10 @@ namespace MinerProxy.Network
                     m_coinHandler.OnEthServerPacket(buffer, length);
                     break;
 
+                case "XMR":
+                    m_coinHandler.OnMoneroServerPacket(buffer, length);
+                    break;
+
                 case "TCP":
 
             if (thisMiner.connectionAlive && m_client.Disposed == false)
@@ -287,6 +295,11 @@ namespace MinerProxy.Network
                 case "NICEHASH":
                     m_coinHandler.OnEthClientPacket(buffer, length);
                     break;
+
+                case "XMR":
+                    m_coinHandler.OnMoneroClientPacket(buffer, length);
+                    break;
+
 
                 case "TCP":
                     
