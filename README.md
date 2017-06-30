@@ -40,32 +40,26 @@ This will cause MinerProxy to create the MySEttingsFileName.json with the defaul
 
 ### Settings.json
 ```
-{Don't copy this config, it is not proper JSON}
-    {
-  "allowedAddresses": [  //The addresses your miner will be allowed to connect from
-    "127.0.0.1",   //Local host
-    "0.0.0.0"      //0.0.0.0 means it accepts ANY host
-  ],
-  "localPort": 9000,    //the port MinerProxy will listen on. you can almost pick any port you want, from 1-65535. almost. It literally doesn't matter what port this is, so long as it's available, and you configure your miner to connect to it.
-  "remoteHost": "us1.ethermine.org",    //your pool's address/hostname
-  "remotePort": 4444,   //your pool's stratum port, check their website
-  "webSocketPort": 9091,    //Port for web server to listen on
-  "log": false,      //Log all communications to file
-  "debug": false,    //debug output in console
-  "identifyDevFee": true,    //do you want to know when the DevFee is doing stuff/rename it to DevFee?
-  "showEndpointInConsole": true,    //Shows IP:Port for connected miners. Can be disabled with E key in console.
-  "showRigStats": true,    //shows rig stats every x seconds, like claymore does updates for speeds and temps. S key to disable in console.
-  "useDotWithRigName": false,     //wallet.minername
-  "useSlashWithRigName": false,    //wallet/minername
-  "useWorkerWithRigName": false,   //-eworker minername
-  "colorizeConsole": true,    //Do you like pretty colors in your console?
-  "replaceWallet": true,     //...do you want to replace any wallets that aren't yours?
-  "useWebSockServer": true,   //Do you want to listen on the webSocketPort? Will you be using the (partially implemented) web UI?
-  "rigStatsIntervalSeconds": 60,   //how often do you want stats printed to console about your rigs?
-  "walletAddress": "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy",   //what's your wallet? What's your rig's name? Do you need a slash or a period? You don't even have to specify a RigName here.
-  "devFeeWalletAddress": "",   //if you want to replace the DevFee wallet to a specific wallet, put it here, otherwise, don't put it here
-  "minedCoin": "ETH"    //The coin you want to mine ETH/ETC/NICEHASH/SIA (Not all coins are implemented yet)
-}
+allowedAddresses: The addresses your miner will be allowed to connect from. Can specify one or more, note that 0.0.0.0 means ALL.
+localPort: the port MinerProxy will listen on. You choose this port, just make sure you point Claymore to it.
+remoteHost: your pool's address/hostname
+remotePort: your pool's stratum port, check their website
+webSocketPort: Port for web server to listen on
+log: Log packets and console to file
+debug: Show debug messages, can be toggled with D key in console.   
+identifyDevFee: Show RigName as DevFee when it is detected  
+showEndpointInConsole: Shows IP:Port for connected miners. Can be disabled with E key in console.
+showRigStats: shows rig stats every rigStatsIntervalSeconds, like claymore does updates for speeds and temps. S key to disable in console.
+useDotWithRigName: If your pool allows a <wallet>.<rig> format, set this to true.
+useSlashWithRigName: If your pool allows a <wallet>/<rig> format, set this to true.
+useWorkerWithRigName: If your pool uses -eworker, set this to true (and report back, because I don't use a pool that does this!)
+colorizeConsole: Adds color to the console. Yellows, greens, reds, etc.
+replaceWallet: Replace all wallets (including DevFee wallets)
+useWebSockServer: Listen for connectionson webSocketPort. Will you be using the (partially implemented) web UI?
+rigStatsIntervalSeconds: Console prints stats (hashrate, shares, time connected) for each Rig x seconds.
+walletAddress: You can specify a wallet, or a wallet and a RigName (with a . or /)   
+devFeeWalletAddress: Replace DevFee wallet with this wallet, otherwise leave blank for default wallet.
+minedCoin: Set the coin you want to mine, check below for details on supported coins
 ```
 
 It's important to note that you don't have to supply a RigName in your walletAddress. If you just put your wallet in there, so long as you have the proper useDot/useSlash/useWorker, your miner will be identified (and reported to the pool) correctly but the wallet will still be replaced with walletAddress.
