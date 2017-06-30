@@ -21,9 +21,7 @@ namespace MinerProxy.Network
         {
             DateTime timeNow = DateTime.Now;
             TimeSpan timeSpan = (timeNow - thisMiner.connectionStartTime);
-            TimeSpan calculatedSpan = (timeNow - thisMiner.lastCalculatedTime);     //determine how long it's been since the last cycle
-            thisMiner.lastCalculatedTime = DateTime.Now;                            //set the lastCalc time to now, so we can do it again next time
-            MinerManager.AddConnectedTime(thisMiner.displayName, calculatedSpan);
+            CalculateConnectedTime();
 
             if (!Program.settings.showRigStats)
                 return;
@@ -41,13 +39,13 @@ namespace MinerProxy.Network
                 Logger.LogToConsole(string.Format(thisMiner.displayName + "'s status update: "), thisMiner.endPoint, ConsoleColor.Cyan);
 
                 color = ConsoleColor.DarkCyan;
-                if (Program.settings.minedCoin != "NICEHASH") // Nicehash doesn't report hashrate
+                if (thisMiner.hashrate == 0) // Nicehash doesn't report hashrate
                     Logger.LogToConsole(string.Format("Hashrate: {0}", thisMiner.hashrate.ToString("#,##0,Mh/s").Replace(",", ".")), thisMiner.endPoint, color);
 
                 if (thisMiner.submittedShares != thisMiner.acceptedShares) //No reason to show if they match, save space with multiple rigs
                     Logger.LogToConsole(string.Format("Found shares: {0}", thisMiner.submittedShares), thisMiner.endPoint, color);
 
-                Logger.LogToConsole(string.Format("Accepted shares: {0}", thisMiner.acceptedShares), thisMiner.endPoint, color);
+                if (thisMiner.acceptedShares > 0) Logger.LogToConsole(string.Format("Accepted shares: {0}", thisMiner.acceptedShares), thisMiner.endPoint, color);
                 if (thisMiner.rejectedShares > 0) Logger.LogToConsole(string.Format("Rejected shares: {0}", thisMiner.rejectedShares), thisMiner.endPoint, color);
                 Logger.LogToConsole(string.Format("Time connected: {0}", timeSpan.ToString("hh\\:mm")), thisMiner.endPoint, color);
                 Logger.LogToConsole(string.Format("Shares per minute: {0}", string.Format("{0:N2}", sharesPerMinuteTruncated)), thisMiner.endPoint, color);
@@ -321,6 +319,14 @@ namespace MinerProxy.Network
              Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " >---->\r\n" + Encoding.UTF8.GetString(buffer,0,length)));
         }
 
+        private void CalculateConnectedTime()
+        {
+
+            TimeSpan calculatedSpan = (DateTime.Now - thisMiner.lastCalculatedTime);     //determine how long it's been since the last cycle
+            thisMiner.lastCalculatedTime = DateTime.Now;                            //set the lastCalc time to now, so we can do it again next time
+            MinerManager.AddConnectedTime(thisMiner.displayName, calculatedSpan);
+        }
+
         public void Dispose()
         {
             if (thisMiner.connectionAlive)
@@ -334,9 +340,13 @@ namespace MinerProxy.Network
                 if (m_server != null)
                     m_server.Dispose();
 
+                CalculateConnectedTime();   //update the miner's connected time, more accurately than just in the status timer
+
                 Logger.LogToConsole(string.Format("Closing session: ({0})", thisMiner.connectionName),  thisMiner.endPoint);
                 statusUpdateTimer.Enabled = false;
             }
         }
+
+
     }
 }
