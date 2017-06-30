@@ -137,11 +137,10 @@ namespace MinerProxy.CoinHandlers
                 {
                     MoneroServerRootObject obj = JsonConvert.DeserializeObject<MoneroServerRootObject>(Encoding.UTF8.GetString(buffer, 0, length));
 
-                    switch (obj.id)
-                    {
+                    switch (obj.id) {
 
                     case 0: //new job?
-                        Logger.LogToConsole("New Job?", redirector.thisMiner.endPoint);
+                        Logger.LogToConsole("New Job from server", redirector.thisMiner.endPoint);
                         break;
 
                     case 1:
