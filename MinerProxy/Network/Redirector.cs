@@ -247,15 +247,9 @@ namespace MinerProxy.Network
                     break;
 
                 case "TCP":
-
-            if (thisMiner.connectionAlive && m_client.Disposed == false)
-                m_client.Send(buffer, length);
-
-            if (Program.settings.log)
-                Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " <----<\r\n" + Encoding.UTF8.GetString(buffer, 0, length)));
-
-
-            break;
+                 if (thisMiner.connectionAlive && m_client.Disposed == false)
+                        m_client.Send(buffer, length);
+                   break;
             }
 
             if (Program.settings.log)
@@ -305,13 +299,8 @@ namespace MinerProxy.Network
 
 
                 case "TCP":
-                    
                     if (thisMiner.connectionAlive && m_server.Disposed == false)
                         m_server.Send(buffer, length);
-
-                    if (Program.settings.log)
-                        Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " <----<\r\n" + Encoding.UTF8.GetString(buffer, 0, length)));
-
                     break;
 
             }
