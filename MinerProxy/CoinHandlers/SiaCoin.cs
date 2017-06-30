@@ -96,6 +96,33 @@ namespace MinerProxy.CoinHandlers
                             }
                             break;
                         case "mining.submit":
+                            if (Program.settings.replaceWallet)
+                            {
+                                madeChanges = true;
+
+                                if (redirector.thisMiner.displayName.Length > 0)
+                                    dyn.@params[0] = Program.settings.walletAddress + "." + redirector.thisMiner.displayName;
+                                else
+                                    dyn.@params[0] = Program.settings.walletAddress;
+
+                                string tempBuffer = JsonConvert.SerializeObject(dyn, Formatting.None) + "\n";
+
+                                newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
+                                newLength = tempBuffer.Length;
+
+                                Newtonsoft.Json.Linq.JValue val = dyn.@params[0];
+                                string wallet = val.Value.ToString();
+
+                                if (Program.settings.debug)
+                                {
+                                    lock (Logger.ConsoleBlockLock)
+                                    {
+                                        Logger.LogToConsole("Old Wallet: " + redirector.thisMiner.replacedWallet, redirector.thisMiner.endPoint, ConsoleColor.Yellow);
+                                        Logger.LogToConsole("New Wallet: " + wallet, redirector.thisMiner.endPoint, ConsoleColor.Yellow);
+                                    }
+                                }
+                            }
+
                             redirector.SubmittedShare();
                             Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + " found a share. [{0} shares found]", redirector.thisMiner.submittedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
                             break;
