@@ -41,7 +41,7 @@ namespace MinerProxy.Network
                 Logger.LogToConsole(string.Format(thisMiner.displayName + "'s status update: "), thisMiner.endPoint, ConsoleColor.Cyan);
 
                 color = ConsoleColor.DarkCyan;
-                if (Program.settings.minedCoin != "NICEHASH") // Nicehash doesn't report hashrate
+                if (Program.settings.minedCoin != "NICEHASH" && (Program.settings.minedCoin != "SC" && Program.settings.minedCoin != "SIA")) // Nicehash & SC don't report hashrate
                     Logger.LogToConsole(string.Format("Hashrate: {0}", thisMiner.hashrate.ToString("#,##0,Mh/s").Replace(",", ".")), thisMiner.endPoint, color);
 
                 if (thisMiner.submittedShares != thisMiner.acceptedShares) //No reason to show if they match, save space with multiple rigs
@@ -129,8 +129,9 @@ namespace MinerProxy.Network
                     m_coinHandler = new EthCoin(this); //initialize the coinhandler with the EthCoin class and reference this Redirector instance
                     break;
 
+                case "SIA":
                 case "SC":
-
+                    m_coinHandler = new SiaCoin(this);
                     break;
 
                 case "ZEC":
@@ -214,8 +215,9 @@ namespace MinerProxy.Network
                     m_coinHandler.OnEthServerPacket(buffer, length);
                     break;
 
+                case "SIA":
                 case "SC":
-
+                    m_coinHandler.OnSiaServerPacket(buffer, length);
                     break;
 
                 case "ZEC":
@@ -265,8 +267,9 @@ namespace MinerProxy.Network
                     m_coinHandler.OnEthClientPacket(buffer, length);
                     break;
 
+                case "SIA":
                 case "SC":
-
+                    m_coinHandler.OnSiaClientPacket(buffer, length);
                     break;
 
                 case "ZEC":
