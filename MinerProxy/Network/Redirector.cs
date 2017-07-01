@@ -39,9 +39,7 @@ namespace MinerProxy.Network
                 Logger.LogToConsole(string.Format(thisMiner.displayName + "'s status update: "), thisMiner.endPoint, ConsoleColor.Cyan);
 
                 color = ConsoleColor.DarkCyan;
-
-
-
+                
                 if (thisMiner.hashrate == 0) // Nicehash doesn't report hashrate
                     Logger.LogToConsole(string.Format("Hashrate: {0}", thisMiner.hashrate.ToString("#,##0,Mh/s").Replace(",", ".")), thisMiner.endPoint, color);
 

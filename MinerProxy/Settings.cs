@@ -8,9 +8,9 @@ namespace MinerProxy
 {
     public class Settings
     {
-        public int localPort { get; set; }
-        public string remoteHost { get; set; }
-        public int remotePort { get; set; }
+        public int proxyListenPort { get; set; }
+        public string remotePoolAddress { get; set; }
+        public int remotePoolPort { get; set; }
         public int webSocketPort { get; set; }
         public bool log { get; set; }
         public bool debug { get; set; }
@@ -43,17 +43,17 @@ namespace MinerProxy
                 try
                 {
                     settings = JsonConvert.DeserializeObject<Settings>(File.ReadAllText(settingsJson));
-                    if (settings.localPort == 0)
+                    if (settings.proxyListenPort == 0)
                     {
                         IncorrectSettingsMessage("Local port missing!", settings, settingsJson);
                     }
 
-                    if (string.IsNullOrEmpty(settings.remoteHost))
+                    if (string.IsNullOrEmpty(settings.remotePoolAddress))
                     {
                         IncorrectSettingsMessage("Remote host missing!", settings, settingsJson);
                     }
 
-                    if (settings.remotePort == 0)
+                    if (settings.remotePoolPort == 0)
                     {
                         IncorrectSettingsMessage("Remote port missing!", settings, settingsJson);
                     }
@@ -154,11 +154,11 @@ namespace MinerProxy
             settings.replaceWallet = true;
             settings.usePasswordAsRigName = false;
             settings.useWebSockServer = true;
-            if (settings.localPort == 0) settings.localPort = 9000;
-            if (settings.remotePort == 0) settings.remotePort = 4444;
+            if (settings.proxyListenPort == 0) settings.proxyListenPort = 9000;
+            if (settings.remotePoolPort == 0) settings.remotePoolPort = 4444;
             if (settings.webSocketPort == 0) settings.webSocketPort = 9091;
             if (settings.rigStatsIntervalSeconds == 0) settings.rigStatsIntervalSeconds = 60;
-            if (string.IsNullOrEmpty(settings.remoteHost)) settings.remoteHost = "us1.ethermine.org";
+            if (string.IsNullOrEmpty(settings.remotePoolAddress)) settings.remotePoolAddress = "us1.ethermine.org";
             if (string.IsNullOrEmpty(settings.walletAddress)) settings.walletAddress = "0x3Ff3CF71689C7f2f8F5c1b7Fc41e030009ff7332.MinerProxy";
             if (string.IsNullOrEmpty(settings.devFeeWalletAddress)) settings.devFeeWalletAddress = "";
             if (string.IsNullOrEmpty(settings.minedCoin)) settings.minedCoin = "ETH";

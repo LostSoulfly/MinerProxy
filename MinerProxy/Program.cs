@@ -85,7 +85,7 @@ namespace MinerProxy
             try
             {
                 listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                listener.Bind(new IPEndPoint(IPAddress.Any, settings.localPort));
+                listener.Bind(new IPEndPoint(IPAddress.Any, settings.proxyListenPort));
                 listener.Listen(100);
             } catch (Exception ex)
             {
@@ -95,8 +95,8 @@ namespace MinerProxy
 
             allDone = new ManualResetEvent(false);
 
-            Console.Title = string.Concat("MinerProxy : ", settings.remoteHost, ':', settings.remotePort);
-            Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.localPort, listener.LocalEndPoint));
+            Console.Title = string.Concat("MinerProxy : ", settings.remotePoolAddress, ':', settings.remotePoolPort);
+            Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.proxyListenPort, listener.LocalEndPoint));
             Logger.LogToConsole("Accepting connections from: " + string.Join(", ", settings.allowedAddresses));
 
             Logger.LogToConsole("Press 'H' for available commands", "HELP");
@@ -244,7 +244,7 @@ namespace MinerProxy
                         return; //if the address supplied isn't allowed, just return and keep listening.
                     }
                 }
-                new Redirector(socket, settings.remoteHost, settings.remotePort);
+                new Redirector(socket, settings.remotePoolAddress, settings.remotePoolPort);
             }
             catch (SocketException se)
             {
