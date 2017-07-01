@@ -39,6 +39,9 @@ namespace MinerProxy.Network
                 Logger.LogToConsole(string.Format(thisMiner.displayName + "'s status update: "), thisMiner.endPoint, ConsoleColor.Cyan);
 
                 color = ConsoleColor.DarkCyan;
+
+
+
                 if (thisMiner.hashrate == 0) // Nicehash doesn't report hashrate
                     Logger.LogToConsole(string.Format("Hashrate: {0}", thisMiner.hashrate.ToString("#,##0,Mh/s").Replace(",", ".")), thisMiner.endPoint, color);
 
@@ -127,8 +130,9 @@ namespace MinerProxy.Network
                     m_coinHandler = new EthCoin(this); //initialize the coinhandler with the EthCoin class and reference this Redirector instance
                     break;
 
+                case "SIA":
                 case "SC":
-
+                    m_coinHandler = new SiaCoin(this);
                     break;
 
                 case "ZEC":
@@ -212,8 +216,9 @@ namespace MinerProxy.Network
                     m_coinHandler.OnEthServerPacket(buffer, length);
                     break;
 
+                case "SIA":
                 case "SC":
-
+                    m_coinHandler.OnSiaServerPacket(buffer, length);
                     break;
 
                 case "ZEC":
@@ -245,15 +250,9 @@ namespace MinerProxy.Network
                     break;
 
                 case "TCP":
-
-            if (thisMiner.connectionAlive && m_client.Disposed == false)
-                m_client.Send(buffer, length);
-
-            if (Program.settings.log)
-                Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " <----<\r\n" + Encoding.UTF8.GetString(buffer, 0, length)));
-
-
-            break;
+                 if (thisMiner.connectionAlive && m_client.Disposed == false)
+                        m_client.Send(buffer, length);
+                   break;
             }
 
             if (Program.settings.log)
@@ -269,8 +268,9 @@ namespace MinerProxy.Network
                     m_coinHandler.OnEthClientPacket(buffer, length);
                     break;
 
+                case "SIA":
                 case "SC":
-
+                    m_coinHandler.OnSiaClientPacket(buffer, length);
                     break;
 
                 case "ZEC":
@@ -303,13 +303,8 @@ namespace MinerProxy.Network
 
 
                 case "TCP":
-                    
                     if (thisMiner.connectionAlive && m_server.Disposed == false)
                         m_server.Send(buffer, length);
-
-                    if (Program.settings.log)
-                        Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " <----<\r\n" + Encoding.UTF8.GetString(buffer, 0, length)));
-
                     break;
 
             }

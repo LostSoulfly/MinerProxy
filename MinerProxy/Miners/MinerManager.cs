@@ -228,7 +228,7 @@ namespace MinerProxy.Miners
             {
                 int minerIndex = GetMinerIndex(displayName);
                 if (minerIndex < 0) return 0;
-                return Program._minerStats[minerIndex].submittedShares;
+                return Program._minerStats[minerIndex].rejectedShares;
             }
         }
 
@@ -258,7 +258,7 @@ namespace MinerProxy.Miners
             {
                 int minerIndex = GetMinerIndex(displayName);
                 if (minerIndex < 0) return;
-                Program._minerStats[minerIndex].submittedShares++;
+                Program._minerStats[minerIndex].rejectedShares++;
             }
         }
 
