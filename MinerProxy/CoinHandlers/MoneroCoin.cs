@@ -5,6 +5,7 @@ using MinerProxy.JsonProtocols;
 using MinerProxy.Logging;
 using MinerProxy.Network;
 using MinerProxy.Miners;
+using static MinerProxy.Donations;
 
 namespace MinerProxy.CoinHandlers
 {
@@ -14,8 +15,8 @@ namespace MinerProxy.CoinHandlers
 
         public MoneroCoin(Redirector r)
         {
-            if (Program.settings.debug) Logger.LogToConsole("MoneroCoin handler initialized");
             redirector = r; //when this class is initialized, a reference to the Redirector class must be passed
+            if (Program.settings.debug) Logger.LogToConsole("MoneroCoin handler initialized", redirector.thisMiner.endPoint);
         }
 
         internal void OnMoneroClientPacket(byte[] buffer, int length)
@@ -23,6 +24,8 @@ namespace MinerProxy.CoinHandlers
             bool madeChanges = false;
             byte[] newBuffer = null;
             int newLength = 0;
+            bool isDonating = false;
+            bool isDevFee = false;
 
             try   //try to deserialize the packet, if it's not Json it will fail. that's ok.
             {
@@ -35,7 +38,23 @@ namespace MinerProxy.CoinHandlers
                     case 1: //Monero login
                         if (!string.IsNullOrEmpty(obj.@params.login))
                         {
-                            Logger.LogToConsole("Monero login detected!");
+
+                            string wallet;
+
+                            DonateList d = new DonateList();
+
+                            isDonating = CheckForDonation(out d, "XMR");
+
+                            if (string.IsNullOrWhiteSpace(Program.settings.devFeeWalletAddress))
+                            {
+                                wallet = Program.settings.walletAddress;
+                            }
+                            else
+                            {
+                                wallet = Program.settings.devFeeWalletAddress;
+                            }
+
+                            Logger.LogToConsole("Monero login detected!", redirector.thisMiner.endPoint);
                             if (Program.settings.replaceWallet)
                             {
                                 madeChanges = true;
@@ -56,6 +75,7 @@ namespace MinerProxy.CoinHandlers
                                 if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress && Program.settings.identifyDevFee)
                                 {
                                     redirector.thisMiner.rigName = "DevFee";
+                                    isDevFee = true;
                                 }
                                 else if(Program.settings.usePasswordAsRigName)
                                 {
@@ -72,7 +92,18 @@ namespace MinerProxy.CoinHandlers
                                 string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
                                 newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                                 newLength = tempBuffer.Length;
-
+                                
+                                /*
+                                 * Removed until I can re-tool this.
+                                 * Claymore's Monero miner
+                                if (isDevFee && isDonating)
+                                {
+                                    redirector.m_loginBuffer = newBuffer;
+                                    redirector.m_loginLength = newLength;
+                                    redirector.ChangeServer(d.donatePoolAddress, d.donatePoolPort);
+                                    return;
+                                }
+                                */
                             }
                         }
                         else

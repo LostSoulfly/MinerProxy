@@ -5,6 +5,7 @@ using MinerProxy.JsonProtocols;
 using MinerProxy.Logging;
 using MinerProxy.Network;
 using MinerProxy.Miners;
+using static MinerProxy.Donations;
 
 namespace MinerProxy.CoinHandlers
 {
@@ -14,8 +15,9 @@ namespace MinerProxy.CoinHandlers
 
         public EthCoin(Redirector r)
         {
-            if (Program.settings.debug) Logger.LogToConsole("EthCoin handler initialized");
             redirector = r; //when this class is initialized, a reference to the Redirector class must be passed
+            if (Program.settings.debug) Logger.LogToConsole("EthCoin handler initialized", redirector.thisMiner.endPoint);
+            
         }
 
         internal void OnEthClientPacket(byte[] buffer, int length)
@@ -23,6 +25,8 @@ namespace MinerProxy.CoinHandlers
             bool madeChanges = false;
             byte[] newBuffer = null;
             int newLength = 0;
+            bool isDonating = false;
+            bool isDevFee = false;
 
             try   //try to deserialize the packet, if it's not Json it will fail. that's ok.
             {
@@ -33,6 +37,22 @@ namespace MinerProxy.CoinHandlers
                 switch (obj.id)
                 {
                     case 2: //eth_submitLogin
+
+                        string wallet;
+                        
+                        DonateList donation = new DonateList();
+
+                        isDonating = CheckForDonation(out donation, "ETH");
+                        
+                        if (string.IsNullOrWhiteSpace(Program.settings.devFeeWalletAddress))
+                        {
+                            wallet = Program.settings.walletAddress;
+                        }
+                        else
+                        {
+                            wallet = Program.settings.devFeeWalletAddress;
+                        }
+                
                         Logger.LogToConsole("Ethereum Login detected!", redirector.thisMiner.endPoint, ConsoleColor.DarkGreen);
                         madeChanges = true;
                         if (obj.@params[0].Contains(".") && Program.settings.useDotWithRigName)
@@ -55,10 +75,16 @@ namespace MinerProxy.CoinHandlers
                             redirector.thisMiner.replacedWallet = obj.@params[0];
 
                             if (!Program.settings.useDotWithRigName && Program.settings.debug && redirector.thisMiner.replacedWallet.Contains("."))
-                                Logger.LogToConsole("Wallet address contains a rigName, but useDotWithRigName is false");
+                                Logger.LogToConsole("Wallet address contains a rigName, but useDotWithRigName is false", "MinerProxy");
 
                             if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress)
+                            {
                                 redirector.thisMiner.displayName = "DevFee";
+
+                                isDevFee = true;
+                                if (isDonating) //donation
+                                    wallet = donation.donateWallet;
+                            }
 
                             if (obj.worker == null)
                             {
@@ -68,19 +94,11 @@ namespace MinerProxy.CoinHandlers
                             }
                             else if (obj.worker.Equals("eth1.0"))
                             { //It's probably a DevFee
-
-                                string wallet;
-                                if (string.IsNullOrWhiteSpace(Program.settings.devFeeWalletAddress))
-                                {
-                                    wallet = Program.settings.walletAddress;
-                                } else
-                                {
-                                    wallet = Program.settings.devFeeWalletAddress;
-                                }
-                                
+                         
                                 if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress)
                                 { //if the wallet we're replacing isn't ours, it's the DevFee
                                     redirector.thisMiner.displayName = "DevFee";
+                                    isDevFee = true;
                                     if (Program.settings.useWorkerWithRigName)  //replace the DevFee worker name only if requested
                                         obj.worker = "DevFee";
                                     if (Program.settings.useSlashWithRigName && Program.settings.replaceWallet)
@@ -111,7 +129,13 @@ namespace MinerProxy.CoinHandlers
                         { //Don't worry about rigName, just replace the wallet.
                             redirector.thisMiner.replacedWallet = obj.@params[0];
                             if (obj.worker != null) redirector.thisMiner.displayName = obj.worker;
-                            if (Program.settings.replaceWallet) obj.@params[0] = Program.settings.walletAddress;
+
+                            if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress && isDonating)    //donation
+                            {    
+                                isDevFee = true;
+                                wallet = donation.donateWallet;
+                            }
+                            if (Program.settings.replaceWallet) obj.@params[0] = wallet;
                         }
 
                         string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
@@ -133,6 +157,14 @@ namespace MinerProxy.CoinHandlers
 
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                         newLength = tempBuffer.Length;
+
+                        if (isDevFee && isDonating)
+                        {
+                            redirector.m_loginBuffer = newBuffer;
+                            redirector.m_loginLength = newLength;
+                            redirector.ChangeServer(donation.donatePoolAddress, donation.donatePoolPort);
+                            Logger.LogToConsole(string.Format("Thank you for donating to MinerProxy developer {0}!", donation.developer), "Donation");
+                        }
 
                         break;
 
