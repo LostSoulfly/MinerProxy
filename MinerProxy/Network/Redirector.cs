@@ -130,7 +130,10 @@ namespace MinerProxy.Network
                 m_server.Receive();
 
                 if (!m_changingServers)
+                {
                     m_client.Receive();
+                    Program.IncrementClientCount();
+                }
 
                 if (m_changingServers)
                 {
@@ -187,6 +190,7 @@ namespace MinerProxy.Network
                 {
                     Logger.LogToConsole(string.Format("Closing session: ({0})", thisMiner.connectionName), thisMiner.endPoint);
                     statusUpdateTimer.Enabled = false;
+                    Program.DecrementClientCount();
                 }
                 else
                 {

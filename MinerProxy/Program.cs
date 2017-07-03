@@ -22,6 +22,7 @@ namespace MinerProxy
         public static BlockingCollection<LogMessage> _logMessages = new BlockingCollection<LogMessage>();
         public static SlidingBuffer<ConsoleList> _consoleQueue = new SlidingBuffer<ConsoleList>(60);
         public static List<MinerStatsFull> _minerStats = new List<MinerStatsFull>();
+        public static int currentClients;
 
         public static HttpServer webSock;
         private static Socket listener;
@@ -105,7 +106,7 @@ namespace MinerProxy
 
             allDone = new ManualResetEvent(false);
 
-            Console.Title = string.Concat("MinerProxy : ", settings.remotePoolAddress, ':', settings.remotePoolPort);
+            UpdateConsoleTitle();
             Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.proxyListenPort, listener.LocalEndPoint), "MinerProxy");
             Logger.LogToConsole("Accepting connections from: " + string.Join(", ", settings.allowedAddresses), "MinerProxy");
 
@@ -279,6 +280,23 @@ namespace MinerProxy
             {
                 Logger.LogToConsole(string.Format("Accept failed with {0}", se.ErrorCode), color: ConsoleColor.Red);
             }
+        }
+
+        private static void UpdateConsoleTitle()
+        {
+            Console.Title = string.Format("MinerProxy: {0}:{1} Clients: {2}", settings.remotePoolAddress, settings.remotePoolPort, currentClients);
+        }
+
+        public static void DecrementClientCount()
+        {
+            currentClients--;
+            UpdateConsoleTitle();
+        }
+
+        public static void IncrementClientCount()
+        {
+            currentClients++;
+            UpdateConsoleTitle();
         }
 
         private static void ProcessLogQueue(CancellationToken token)
