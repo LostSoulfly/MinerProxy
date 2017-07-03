@@ -14,8 +14,8 @@ namespace MinerProxy.CoinHandlers
 
         public NiceHash(Redirector r)
         {
-            if (Program.settings.debug) Logger.LogToConsole("NiceHash handler initialized");
             redirector = r; //when this class is initialized, a reference to the Redirector class must be passed
+            if (Program.settings.debug) Logger.LogToConsole("NiceHash handler initialized", redirector.thisMiner.endPoint);
         }
 
         internal void OnEthClientPacket(byte[] buffer, int length)

@@ -82,6 +82,7 @@
     <Compile Include="CoinHandlers\EthCoin.cs" />
     <Compile Include="CoinHandlers\NiceHash.cs" />
     <Compile Include="Miners\MinerStats.cs" />
+    <Compile Include="Configs\Donations.cs" />
     <Compile Include="Web\ConsoleList.cs" />
     <Compile Include="JsonProtocols\SiaProtocol.cs" />
     <Compile Include="Logging\Logger.cs" />
@@ -92,7 +93,7 @@
     <Compile Include="Network\Session.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Settings.cs" />
+    <Compile Include="Configs\Settings.cs" />
     <Compile Include="Web\WebConsole.cs" />
     <Compile Include="Web\WebIndex.cs" />
   </ItemGroup>

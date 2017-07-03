@@ -15,8 +15,8 @@ namespace MinerProxy.CoinHandlers
 
         public SiaCoin(Redirector r)
         {
-            if (Program.settings.debug) Logger.LogToConsole("Siacoin handler initialized");
             redirector = r; //when this class is initialized, a reference to the Redirector class must be passed
+            if (Program.settings.debug) Logger.LogToConsole("Siacoin handler initialized", redirector.thisMiner.endPoint);
         }
 
         internal void OnSiaClientPacket(byte[] buffer, int length)

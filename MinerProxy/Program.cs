@@ -11,6 +11,7 @@ using WebSocketSharp.Server;
 using System.Collections.Generic;
 using MinerProxy.Network;
 using MinerProxy.Miners;
+using static MinerProxy.Donations;
 
 namespace MinerProxy
 {
@@ -43,39 +44,48 @@ namespace MinerProxy
                 logQueue.Start();
 
             if (settings.debug)
-                Logger.LogToConsole("Debug enabled");
+                Logger.LogToConsole("Debug enabled", "MinerProxy");
 
             if (settings.identifyDevFee)
-                Logger.LogToConsole("Showing DevFee mining as 'DevFee' rigName");
+                Logger.LogToConsole("Showing DevFee mining as 'DevFee' rigName", "MinerProxy");
 
             Logger.LogToConsole("Coin protocol: " + settings.minedCoin);
 
+            if (settings.donateDevFee)
+            {
+                Logger.LogToConsole(string.Format("You are donating {0}% of DevFees to LostSoulfly and Samut3. Thanks!", Program.settings.percentToDonate), "MinerProxy");
+                SetUpDonateLists();
+            } else
+            {
+                Logger.LogToConsole("You are not donating a DevFee percentage to MinerProxy maintainers.", "MinerProxy");
+            }
+
             if (Program.settings.replaceWallet)
             {
-                Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress);
+                Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress, "MinerProxy");
                 if (!string.IsNullOrWhiteSpace(settings.devFeeWalletAddress))
-                    Logger.LogToConsole("Replacing DevFee wallets with " + settings.devFeeWalletAddress);
+                    Logger.LogToConsole("Replacing DevFee wallets with " + settings.devFeeWalletAddress, "MinerProxy");
             }
             else
             {
-                Logger.LogToConsole("Not replacing Wallets");
+                Logger.LogToConsole("Not replacing Wallets", "MinerProxy");
             }
-
+            
             //initialize webSock
             if (Program.settings.useWebSockServer)
             {
                 try
                 {
                     webSock = new HttpServer(settings.webSocketPort);
-                    webSock.RootPath = Directory.GetCurrentDirectory() + "\\web\\";     //double slashes necessary to escape the slashes
+                    webSock.RootPath = Directory.GetCurrentDirectory() + @"\web\";
                     Directory.CreateDirectory(webSock.RootPath);
-                    if (settings.debug) Logger.LogToConsole(string.Format("Web root: {0}", webSock.RootPath));
+                    if (settings.debug) Logger.LogToConsole(string.Format("Web root: {0}", webSock.RootPath), "MinerProxy");
 
                     webSock.OnGet += new EventHandler<HttpRequestEventArgs>(Web.WebIndex.OnGet);
                     webSock.AddWebSocketService<WebIndex>("/");
                     webSock.AddWebSocketService<WebConsole>("/console");
                     webSock.Start();
-                    Logger.LogToConsole(string.Format("WebSockServer listening on port {0}", settings.webSocketPort));
+                    Logger.LogToConsole(string.Format("WebSockServer listening on port {0}", settings.webSocketPort), "MinerProxy");
                 } catch (Exception ex)
                 {
                     Logger.LogToConsole(string.Format("Unable to start WebSocketServer on port {0}. Error: {1}", settings.webSocketPort, ex.Message));
@@ -96,10 +106,10 @@ namespace MinerProxy
             allDone = new ManualResetEvent(false);
 
             Console.Title = string.Concat("MinerProxy : ", settings.remotePoolAddress, ':', settings.remotePoolPort);
-            Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.proxyListenPort, listener.LocalEndPoint));
-            Logger.LogToConsole("Accepting connections from: " + string.Join(", ", settings.allowedAddresses));
+            Logger.LogToConsole(string.Format("Listening for miners on port {0}, on IP {1}", settings.proxyListenPort, listener.LocalEndPoint), "MinerProxy");
+            Logger.LogToConsole("Accepting connections from: " + string.Join(", ", settings.allowedAddresses), "MinerProxy");
 
-            Logger.LogToConsole("Press 'H' for available commands", "HELP");
+            Logger.LogToConsole("Press 'H' for available commands", "MinerProxy");
 
             var listenerTask = new Task(() => listenerStart(), TaskCreationOptions.LongRunning);
             listenerTask.Start();
@@ -117,28 +127,28 @@ namespace MinerProxy
 
                         case "S":
                             settings.showRigStats = !settings.showRigStats;
-                            Logger.LogToConsole((settings.showRigStats) ? "RigStats enabled" : "RigStats disabled");
+                            Logger.LogToConsole((settings.showRigStats) ? "RigStats enabled" : "RigStats disabled", "MinerProxy");
                             break;
 
                         case "U":
                             //update settings file with new options
                             Settings.writeSettings(settings.settingsFile, settings);
-                            Logger.LogToConsole(string.Format("Updated {0} file to newest version", settings.settingsFile));
+                            Logger.LogToConsole(string.Format("Updated {0} file to newest version", settings.settingsFile), "MinerProxy");
                             break;
 
                         case "C":
                             settings.colorizeConsole = (!settings.colorizeConsole);
-                            Logger.LogToConsole((settings.colorizeConsole) ? "Colors enabled" : "Colors disabled");
+                            Logger.LogToConsole((settings.colorizeConsole) ? "Colors enabled" : "Colors disabled", "MinerProxy");
                             break;
 
                         case "E":
                             settings.showEndpointInConsole = (!settings.showEndpointInConsole);
-                            Logger.LogToConsole((settings.showEndpointInConsole) ? "Endpoint prefix enabled" : "Endpoint prefix disabled");
+                            Logger.LogToConsole((settings.showEndpointInConsole) ? "Endpoint prefix enabled" : "Endpoint prefix disabled", "MinerProxy");
                             break;
 
                         case "L":
                             settings.log = !settings.log;
-                            Logger.LogToConsole((settings.log) ? "Logging enabled" : "Logging disabled");
+                            Logger.LogToConsole((settings.log) ? "Logging enabled" : "Logging disabled", "MinerProxy");
 
                             if (settings.log)
                             {
@@ -155,11 +165,11 @@ namespace MinerProxy
 
                         case "D":
                             settings.debug = !settings.debug;
-                            Logger.LogToConsole((settings.debug) ? "Debug enabled" : "Debug disabled");
+                            Logger.LogToConsole((settings.debug) ? "Debug enabled" : "Debug disabled", "MinerProxy");
                             break;
 
                         case "Q":
-                            Logger.LogToConsole("Shutting down MinerProxy..");
+                            Logger.LogToConsole("Shutting down MinerProxy..", "MinerProxy");
                             System.Environment.Exit(0);
                             return;
 
@@ -188,7 +198,22 @@ namespace MinerProxy
 
                         case "X":
                                 File.WriteAllText("MinerStats.json", Newtonsoft.Json.JsonConvert.SerializeObject(_minerStats, Newtonsoft.Json.Formatting.Indented));
-                            Logger.LogToConsole("Exported MinerStats to MinerStats.json");
+                            Logger.LogToConsole("Exported MinerStats to MinerStats.json", "MinerProxy");
+                            break;
+
+                        case "O":
+                            DonateList d = new DonateList();
+                            double success = 0;
+                            for (int i = 0; i < 1000; i++)  //be careful doing this with debug and more than 10k. Could take a while.
+                            {
+                                if (CheckForDonation(out d, "ETH"))
+                                {
+                                    if (settings.debug) Logger.LogToConsole(d.donatePoolAddress + " " + d.donatePoolPort + " " + d.donateWallet);
+                                    success++;
+                                }
+                            }
+                            Logger.LogToConsole("Success percentage: " + ((success / 1000) * 100) + "% out of 1,000", "MinerProxy");
+                            Logger.LogToConsole("Win: " + success + " - Lose: " + (1000 - success) + ". Donate percent: " + settings.percentToDonate, "MinerProxy");
                             break;
 
                         case "H":
@@ -200,6 +225,9 @@ namespace MinerProxy
                                 Logger.LogToConsole("E key: Enable/Disable Endpoint prefix on log messages", "HELP", ConsoleColor.Yellow);
                                 Logger.LogToConsole("L key: Enable/Disable logging to file", "HELP", ConsoleColor.Yellow);
                                 Logger.LogToConsole("D key: Enable/Disable debug messages", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("M key: Print all miner stats to console", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("X key: Export all miner stats to MinerStats.json", "HELP", ConsoleColor.Yellow);
+                                Logger.LogToConsole("O key: Run a test of DevFee donation percentages. Turn debug off for faster tests.");
                                 Logger.LogToConsole("U key: Update the loaded JSON file with current settings", "HELP", ConsoleColor.Yellow);
                                 Logger.LogToConsole("Q key: Quit MinerProxy", "HELP", ConsoleColor.Yellow);
                             }
@@ -232,19 +260,20 @@ namespace MinerProxy
             try
             {
                 var socket = listener.EndAccept(iar);
-
                 string remoteAddress = ((IPEndPoint)socket.RemoteEndPoint).Address.ToString();
 
                 if (!settings.allowedAddresses.Contains("0.0.0.0"))
                 {
                     if (!settings.allowedAddresses.Contains(remoteAddress))
                     {
-                        Logger.LogToConsole("Remote host " + remoteAddress + " not allowed; ignoring", color: ConsoleColor.Red);
+                        Logger.LogToConsole("Remote host " + remoteAddress + " not allowed; ignoring", "MinerProxy", ConsoleColor.Red);
 
                         return; //if the address supplied isn't allowed, just return and keep listening.
                     }
                 }
+                
                 new Redirector(socket, settings.remotePoolAddress, settings.remotePoolPort);
+            
             }
             catch (SocketException se)
             {
@@ -254,7 +283,7 @@ namespace MinerProxy
 
         private static void ProcessLogQueue(CancellationToken token)
         {
-            if (settings.debug) Logger.LogToConsole("Logging queue started");
+            if (settings.debug) Logger.LogToConsole("Logging queue started", "MinerProxy");
 
             foreach (var msg in _logMessages.GetConsumingEnumerable())
             {
@@ -264,7 +293,7 @@ namespace MinerProxy
                 }
                 else
                 {
-                    if (settings.debug) Logger.LogToConsole("Logging queue stopped");
+                    if (settings.debug) Logger.LogToConsole("Logging queue stopped", "MinerProxy");
                     return;
                 }
             }

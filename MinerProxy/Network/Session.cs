@@ -22,6 +22,9 @@ namespace MinerProxy.Network
         public Action<byte[],int> OnDataReceived { get; set; }
         public Action OnDisconnected { get; set; }
 
+        public string ip;
+        public string port;
+
         public Session(Socket socket)
         {
             m_socket = socket;

@@ -5,6 +5,7 @@ using System.Timers;
 using MinerProxy.CoinHandlers;
 using MinerProxy.Logging;
 using MinerProxy.Miners;
+using System.Net;
 
 namespace MinerProxy.Network
 {
@@ -12,6 +13,11 @@ namespace MinerProxy.Network
     {
         internal Session m_client, m_server;
         internal dynamic m_coinHandler;
+        internal bool m_changingServers;
+        internal byte[] m_loginBuffer;
+        internal int m_loginLength;
+
+        internal Donations.DonateList m_donation;
 
         internal MinerStats thisMiner;
         
@@ -54,14 +60,25 @@ namespace MinerProxy.Network
             }
         }
 
+        private void CalculateConnectedTime()
+        {
+
+            TimeSpan calculatedSpan = (DateTime.Now - thisMiner.lastCalculatedTime);     //determine how long it's been since the last cycle
+            thisMiner.lastCalculatedTime = DateTime.Now;                            //set the lastCalc time to now, so we can do it again next time
+            MinerManager.AddConnectedTime(thisMiner.displayName, calculatedSpan);
+        }
+
         public Redirector(Socket client, string ip, int port)
         {
-            SetupCoinHandler();
             thisMiner = new MinerStats();
-
+            IPEndPoint remoteEndPoint = client.RemoteEndPoint as IPEndPoint;
+            
             thisMiner.connectionName = client.RemoteEndPoint.ToString();
             thisMiner.connectionStartTime = DateTime.Now;
             thisMiner.lastCalculatedTime = DateTime.Now;
+            thisMiner.endPoint = remoteEndPoint.Address.ToString() + "_" + remoteEndPoint.Port.ToString();
+
+            SetupCoinHandler();
 
             statusUpdateTimer = new Timer();
             statusUpdateTimer.Elapsed += new ElapsedEventHandler(OnStatusUpdate);
@@ -74,13 +91,10 @@ namespace MinerProxy.Network
             {
                 statusUpdateTimer.Interval = 60000;
             }
+
             statusUpdateTimer.Enabled = true;
-
-            int index = thisMiner.connectionName.IndexOf(":");
-            thisMiner.endPoint = thisMiner.connectionName.Substring(0, index);
-            thisMiner.endPoint = thisMiner.endPoint + "_" + thisMiner.connectionName.Substring(index + 1);
-
-            Logger.LogToConsole(string.Format("Session started: ({0})", thisMiner.connectionName),  thisMiner.endPoint, ConsoleColor.DarkGreen);
+            
+            Logger.LogToConsole(string.Format("Session started: ({0})", thisMiner.connectionName), thisMiner.endPoint, ConsoleColor.DarkGreen);
 
             thisMiner.connectionAlive = false;
             MinerManager.SetConnectionAlive(thisMiner.displayName, thisMiner.connectionAlive);
@@ -88,7 +102,9 @@ namespace MinerProxy.Network
             m_client = new Session(client);
             m_client.OnDataReceived = OnClientPacket;
             m_client.OnDisconnected = Dispose;
-            
+            m_client.ip = remoteEndPoint.Address.ToString();
+            m_client.port = remoteEndPoint.Port.ToString();
+
             var outSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             outSocket.BeginConnect(ip, port, EndConnect, outSocket);
         }
@@ -100,29 +116,206 @@ namespace MinerProxy.Network
                 var outSocket = iar.AsyncState as Socket;
 
                 outSocket.EndConnect(iar);
+                IPEndPoint remoteEndPoint = outSocket.RemoteEndPoint as IPEndPoint;
 
                 m_server = new Session(outSocket);
                 m_server.OnDataReceived = OnServerPacket;
                 m_server.OnDisconnected = Dispose;
+                m_server.ip = remoteEndPoint.Address.ToString();
+                m_server.port = remoteEndPoint.Port.ToString();
 
                 thisMiner.connectionAlive = true;
                 MinerManager.SetConnectionAlive(thisMiner.displayName, thisMiner.connectionAlive);
 
                 m_server.Receive();
-                m_client.Receive();
+
+                if (!m_changingServers)
+                    m_client.Receive();
+
+                if (m_changingServers)
+                {
+                    if (Program.settings.debug)
+                        Logger.LogToConsole(string.Format("ChangeServer successful. New server: {0}:{1}", m_server.ip, m_server.port), thisMiner.endPoint);
+                    m_server.Send(m_loginBuffer, m_loginLength);
+                    
+                    m_changingServers = false;
+                }
+
             }
             catch (SocketException se)
             {
-                m_client.Dispose();
-                statusUpdateTimer.Enabled = false;
-                Logger.LogToConsole(string.Format("Connection bridge failed with {0} ({1})",se.ErrorCode,thisMiner.connectionName),  thisMiner.endPoint, ConsoleColor.Red);
+                if (m_changingServers)
+                {
+                    Logger.LogToConsole(string.Format("Donation pool connection failed, using original pool {0} ({1})", se.ErrorCode, thisMiner.connectionName), thisMiner.endPoint);
+                    ChangeServer(Program.settings.remotePoolAddress, Program.settings.remotePoolPort);
+                }
+                else
+                {
+                    m_client.Dispose();
+                    statusUpdateTimer.Enabled = false;
+                    Logger.LogToConsole(string.Format("Connection bridge failed with {0} ({1})", se.ErrorCode, thisMiner.connectionName), thisMiner.endPoint, ConsoleColor.Red);
+                }
             }
         }
 
+        internal void ChangeServer(string ip, int port)
+        {
+            m_changingServers = true;
+            Logger.LogToConsole(string.Format("ChangeServer initiated to {0}:{1}", ip, port), thisMiner.endPoint);
+            m_server.Dispose();
+            try
+            {
+                var outSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                outSocket.BeginConnect(ip, port, EndConnect, outSocket);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogToConsole(ex.Message);
+            }
+        }
+
+        public void Dispose()
+        {
+            if (thisMiner.connectionAlive)
+            {
+                thisMiner.connectionAlive = false;
+                MinerManager.SetConnectionAlive(thisMiner.displayName, thisMiner.connectionAlive);
+                
+                CalculateConnectedTime();   //update the miner's connected time, more accurately than just in the status timer
+
+                if (!m_changingServers)
+                {
+                    Logger.LogToConsole(string.Format("Closing session: ({0})", thisMiner.connectionName), thisMiner.endPoint);
+                    statusUpdateTimer.Enabled = false;
+                }
+                else
+                {
+                    Logger.LogToConsole(string.Format("Closing server connection: {0}:{1}", m_server.ip, m_server.port), thisMiner.endPoint);
+                }
+
+                if (m_client != null && !m_changingServers)
+                    m_client.Dispose();
+
+                if (m_server != null)
+                    m_server.Dispose();
+
+            }
+        }
+
+        private void OnServerPacket(byte[] buffer,int length)
+        {
+            // Is it slow comparing strings every packet?
+            switch (Program.settings.minedCoin)
+            {
+                case "UBQ":
+                case "UBIQ":
+                case "EXP":
+                case "ETC":
+                case "ETH":
+                    m_coinHandler.OnEthServerPacket(buffer, length);
+                    break;
+
+                case "SIA":
+                case "SC":
+                    m_coinHandler.OnSiaServerPacket(buffer, length);
+                    break;
+
+                case "ZEC":
+                    break;
+
+                case "PASC":
+                    break;
+
+                case "DCR":
+                    break;
+
+                case "LBRY":
+                    break;
+
+                case "CRYPTONOTE":
+                case "CRY":
+                    break;
+
+                case "NICEHASH":
+                    m_coinHandler.OnEthServerPacket(buffer, length);
+                    break;
+
+                case "XMR":
+                    m_coinHandler.OnMoneroServerPacket(buffer, length);
+                    break;
+
+                case "TCP":
+                 if (thisMiner.connectionAlive && m_client.Disposed == false)
+                        m_client.Send(buffer, length);
+                   break;
+            }
+
+            if (Program.settings.log)
+                Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " <----<\r\n" + Encoding.UTF8.GetString(buffer, 0, length)));
+        }
+
+        private void OnClientPacket(byte[] buffer, int length)
+        {
+            // Is it slow comparing strings every packet?
+            switch (Program.settings.minedCoin)
+            {
+                case "UBQ":
+                case "UBIQ":
+                case "EXP":
+                case "ETC":
+                case "ETH":
+                    m_coinHandler.OnEthClientPacket(buffer, length);
+                    break;
+
+                case "SIA":
+                case "SC":
+                    m_coinHandler.OnSiaClientPacket(buffer, length);
+                    break;
+
+                case "ZEC":
+                    break;
+
+                case "PASC":
+                    break;
+
+                case "DCR":
+                    break;
+
+                case "LBRY":
+                    break;
+
+                case "CRYPTONOTE":
+                case "CRY":
+                    break;
+
+                case "NICEHASH":
+                    m_coinHandler.OnEthClientPacket(buffer, length);
+                    break;
+
+                case "XMR":
+                    m_coinHandler.OnMoneroClientPacket(buffer, length);
+                    break;
+
+
+                case "TCP":
+                    if (thisMiner.connectionAlive && m_server.Disposed == false)
+                        m_server.Send(buffer, length);
+                    break;
+
+            }
+
+
+            if (Program.settings.log)
+             Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " >---->\r\n" + Encoding.UTF8.GetString(buffer,0,length)));
+        }
+        
         private void SetupCoinHandler()
         {
             switch (Program.settings.minedCoin)
             {
+                case "UBQ":
+                case "UBIQ":
+                case "EXP":
                 case "ETC":
                 case "ETH":
                     m_coinHandler = new EthCoin(this); //initialize the coinhandler with the EthCoin class and reference this Redirector instance
@@ -145,9 +338,6 @@ namespace MinerProxy.Network
                 case "LBRY":
                     break;
 
-                case "UBIQ":
-                case "UBQ":
-                    break;
 
                 case "CRYPTONOTE":
                 case "CRY":
@@ -193,6 +383,9 @@ namespace MinerProxy.Network
             if (string.IsNullOrEmpty(thisMiner.displayName))
                 thisMiner.displayName = thisMiner.rigName;
 
+            if (Program.settings.useRigNameAsEndPoint)
+                thisMiner.endPoint = thisMiner.displayName;
+            
             MinerManager.AddNewMiner(thisMiner.displayName);
             MinerManager.SetConnectionStartTime(thisMiner.displayName, thisMiner.connectionStartTime);
             MinerManager.SetWorkerName(thisMiner.displayName, thisMiner.workerName);
@@ -203,143 +396,6 @@ namespace MinerProxy.Network
             MinerManager.SetConnectionAlive(thisMiner.displayName, true);
             MinerManager.AddMinerWallet(thisMiner.displayName, thisMiner.replacedWallet);
         }
-
-        private void OnServerPacket(byte[] buffer,int length)
-        {
-            // Is it slow comparing strings every packet?
-            switch (Program.settings.minedCoin)
-            {
-                case "ETC":
-                case "ETH":
-                    m_coinHandler.OnEthServerPacket(buffer, length);
-                    break;
-
-                case "SIA":
-                case "SC":
-                    m_coinHandler.OnSiaServerPacket(buffer, length);
-                    break;
-
-                case "ZEC":
-                    break;
-
-                case "PASC":
-                    break;
-
-                case "DCR":
-                    break;
-
-                case "LBRY":
-                    break;
-
-                case "UBIQ":
-                case "UBQ":
-                    break;
-
-                case "CRYPTONOTE":
-                case "CRY":
-                    break;
-
-                case "NICEHASH":
-                    m_coinHandler.OnEthServerPacket(buffer, length);
-                    break;
-
-                case "XMR":
-                    m_coinHandler.OnMoneroServerPacket(buffer, length);
-                    break;
-
-                case "TCP":
-                 if (thisMiner.connectionAlive && m_client.Disposed == false)
-                        m_client.Send(buffer, length);
-                   break;
-            }
-
-            if (Program.settings.log)
-                Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " <----<\r\n" + Encoding.UTF8.GetString(buffer, 0, length)));
-        }
-        private void OnClientPacket(byte[] buffer, int length)
-        {
-            // Is it slow comparing strings every packet?
-            switch (Program.settings.minedCoin)
-            {
-                case "ETC":
-                case "ETH":
-                    m_coinHandler.OnEthClientPacket(buffer, length);
-                    break;
-
-                case "SIA":
-                case "SC":
-                    m_coinHandler.OnSiaClientPacket(buffer, length);
-                    break;
-
-                case "ZEC":
-                    break;
-
-                case "PASC":
-                    break;
-
-                case "DCR":
-                    break;
-
-                case "LBRY":
-                    break;
-
-                case "UBIQ":
-                case "UBQ":
-                    break;
-
-                case "CRYPTONOTE":
-                case "CRY":
-                    break;
-
-                case "NICEHASH":
-                    m_coinHandler.OnEthClientPacket(buffer, length);
-                    break;
-
-                case "XMR":
-                    m_coinHandler.OnMoneroClientPacket(buffer, length);
-                    break;
-
-
-                case "TCP":
-                    if (thisMiner.connectionAlive && m_server.Disposed == false)
-                        m_server.Send(buffer, length);
-                    break;
-
-            }
-
-
-            if (Program.settings.log)
-             Program._logMessages.Add(new LogMessage(Logger.logFileName + ".txt", DateTime.Now.ToLongTimeString() + " >---->\r\n" + Encoding.UTF8.GetString(buffer,0,length)));
-        }
-
-        private void CalculateConnectedTime()
-        {
-
-            TimeSpan calculatedSpan = (DateTime.Now - thisMiner.lastCalculatedTime);     //determine how long it's been since the last cycle
-            thisMiner.lastCalculatedTime = DateTime.Now;                            //set the lastCalc time to now, so we can do it again next time
-            MinerManager.AddConnectedTime(thisMiner.displayName, calculatedSpan);
-        }
-
-        public void Dispose()
-        {
-            if (thisMiner.connectionAlive)
-            {
-                thisMiner.connectionAlive = false;
-                MinerManager.SetConnectionAlive(thisMiner.displayName, thisMiner.connectionAlive);
-
-                if (m_client != null)
-                    m_client.Dispose();
-
-                if (m_server != null)
-                    m_server.Dispose();
-
-                CalculateConnectedTime();   //update the miner's connected time, more accurately than just in the status timer
-
-                Logger.LogToConsole(string.Format("Closing session: ({0})", thisMiner.connectionName),  thisMiner.endPoint);
-                statusUpdateTimer.Enabled = false;
-            }
-        }
-
 
     }
 }

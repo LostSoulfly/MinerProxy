@@ -39,7 +39,7 @@ namespace MinerProxy.Miners
             if (!string.IsNullOrEmpty(this.displayName))    //don't try to initialize again
                 return;
             if (Program.settings.debug)
-                Logging.Logger.LogToConsole(string.Format("Initializing MinerStatsFull for {0}", displayName));
+                Logging.Logger.LogToConsole(string.Format("Initializing MinerStatsFull for {0}", displayName), displayName);
             this.displayName = displayName;
             this.firstConnectTime = DateTime.Now;
             this.totalTimeConnected = TimeSpan.Zero;
@@ -62,7 +62,7 @@ namespace MinerProxy.Miners
                 return hashrate.ToString("#,##0,Mh/s").Replace(",", ".");
             } catch (Exception ex)
             {
-                if (Program.settings.debug) Logging.Logger.LogToConsole(string.Format("Hashrate average error: {0}", ex.Message));
+                if (Program.settings.debug) Logging.Logger.LogToConsole(string.Format("Hashrate average error: {0}", ex.Message), "MinerProxy");
                 return "0 MH/s";
             }
         }
