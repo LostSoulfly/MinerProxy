@@ -138,6 +138,8 @@ namespace MinerProxy.CoinHandlers
                             if (Program.settings.replaceWallet) obj.@params[0] = wallet;
                         }
 
+                        redirector.SetupMinerStats();   //Set up MinerStats with the new information from the login
+
                         string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
 
                         if (Program.settings.replaceWallet)
@@ -150,11 +152,9 @@ namespace MinerProxy.CoinHandlers
                         } 
                         else
                         {
-                            Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.thisMiner.displayName, obj.@params[0]));
+                            Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.thisMiner.displayName, obj.@params[0]), redirector.thisMiner.endPoint, ConsoleColor.Yellow);
                         }
                         
-                        redirector.SetupMinerStats();
-
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                         newLength = tempBuffer.Length;
 
