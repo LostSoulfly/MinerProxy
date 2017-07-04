@@ -28,14 +28,19 @@ namespace MinerProxy.Logging
             Console.WriteLine(asciiLogo + version);
             Console.WriteLine(credits + '\n');
 
-            Program._consoleQueue.Add(new ConsoleList("MinerProxy v" + version, ConsoleColor.White));
-            Program._consoleQueue.Add(new ConsoleList(credits, ConsoleColor.White));
+            Program._webConsoleQueue.Add(new ConsoleList("MinerProxy v" + version, "MinerProxy", ConsoleColor.White));
+            Program._webConsoleQueue.Add(new ConsoleList(credits, "MinerProxy", ConsoleColor.White));
         }
 
-        public static void LogToConsole(string msg, string m_endpoint = "NONE", ConsoleColor color = ConsoleColor.White)
+        public static void LogToConsole(string msg, string m_endpoint = "NONE", ConsoleColor color = ConsoleColor.White, bool bypassQueue = false)
         {
             string message;
 
+            if (!bypassQueue && Program.settings.consoleQueueStarted)
+            {
+                Program._consoleQueue.Add(new ConsoleList(msg, m_endpoint, color));
+                return;
+            }
             
                 if (Program.settings.showEndpointInConsole)
                 {
@@ -58,7 +63,7 @@ namespace MinerProxy.Logging
                Program._logMessages.Add(new LogMessage(logFileName + ".txt", string.Format("[{0}] {1}: {2}", m_endpoint, DateTime.Now.ToLongTimeString(), msg)));
             }
 
-            Program._consoleQueue.Add(new ConsoleList(message, color));
+            Program._webConsoleQueue.Add(new ConsoleList(message, m_endpoint, color));
             
         }
     }

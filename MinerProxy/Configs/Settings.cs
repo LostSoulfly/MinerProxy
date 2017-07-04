@@ -32,7 +32,7 @@ namespace MinerProxy
         public string devFeeWalletAddress { get; set; }
         public string minedCoin { get; set; }
         public List<string> allowedAddresses = new List<string>();
-
+        internal bool consoleQueueStarted { get; set; }
         internal string settingsFile { get; set; }
 
         //maybe pass the class to the redirector, after changing the connection to the pool one

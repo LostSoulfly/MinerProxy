@@ -20,7 +20,9 @@ namespace MinerProxy
         public static Settings settings;
         
         public static BlockingCollection<LogMessage> _logMessages = new BlockingCollection<LogMessage>();
-        public static SlidingBuffer<ConsoleList> _consoleQueue = new SlidingBuffer<ConsoleList>(60);
+        public static SlidingBuffer<ConsoleList> _webConsoleQueue = new SlidingBuffer<ConsoleList>(60);
+        public static BlockingCollection<ConsoleList> _consoleQueue = new BlockingCollection<ConsoleList>();
+
         public static List<MinerStatsFull> _minerStats = new List<MinerStatsFull>();
         public static int currentClients;
 
@@ -44,13 +46,16 @@ namespace MinerProxy
             if (settings.log) //if logging enabled, let's start the logging queue
                 logQueue.Start();
 
+            var consoleQueue = new Task(() => ProcessConsoleQueue(), TaskCreationOptions.LongRunning);
+            consoleQueue.Start();
+
             if (settings.debug)
                 Logger.LogToConsole("Debug enabled", "MinerProxy");
 
             if (settings.identifyDevFee)
-                Logger.LogToConsole("Showing DevFee mining as 'DevFee' rigName", "MinerProxy");
+                Logger.LogToConsole("Identifying DevFee connections as 'DevFee'", "MinerProxy");
 
-            Logger.LogToConsole("Coin protocol: " + settings.minedCoin);
+            Logger.LogToConsole("Coin protocol: " + settings.minedCoin, "MinerProxy");
 
             if (settings.donateDevFee)
             {
@@ -63,9 +68,9 @@ namespace MinerProxy
 
             if (Program.settings.replaceWallet)
             {
-                Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress, "MinerProxy");
+                Logger.LogToConsole("Replacing Wallets with: " + settings.walletAddress, "MinerProxy", ConsoleColor.Yellow);
                 if (!string.IsNullOrWhiteSpace(settings.devFeeWalletAddress))
-                    Logger.LogToConsole("Replacing DevFee wallets with " + settings.devFeeWalletAddress, "MinerProxy");
+                    Logger.LogToConsole("Replacing DevFee wallets with " + settings.devFeeWalletAddress, "MinerProxy", ConsoleColor.Yellow);
             }
             else
             {
@@ -297,6 +302,20 @@ namespace MinerProxy
         {
             currentClients++;
             UpdateConsoleTitle();
+        }
+
+        
+        private static void ProcessConsoleQueue()
+        {
+            if (settings.debug) Logger.LogToConsole("Console queue started", "MinerProxy");
+            settings.consoleQueueStarted = true;
+            foreach (var msg in _consoleQueue.GetConsumingEnumerable())
+            {
+                lock (Logger.ConsoleBlockLock)
+                {
+                    Logger.LogToConsole(msg.message, msg.endPoint, msg.color, true);
+                }
+            }
         }
 
         private static void ProcessLogQueue(CancellationToken token)

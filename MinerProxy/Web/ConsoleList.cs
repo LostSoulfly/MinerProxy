@@ -9,12 +9,14 @@ namespace MinerProxy.Web
 
         public ConsoleColor color { get; set; }
         public string message { get; set; }
+        public string endPoint { get; set; }
 
-        public ConsoleList(string text, ConsoleColor color)
+        public ConsoleList(string text, string endPoint, ConsoleColor color)
 
         {
             this.message = text;
             this.color = color;
+            this.endPoint = endPoint;
         }
 
     }

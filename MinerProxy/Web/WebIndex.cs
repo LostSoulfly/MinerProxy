@@ -28,7 +28,7 @@ namespace MinerProxy.Web
                 resp.ContentType = "text/html";
                 resp.ContentEncoding = Encoding.UTF8;
 
-                var queue = new List<ConsoleList>(Program._consoleQueue);
+                var queue = new List<ConsoleList>(Program._webConsoleQueue);
 
                 foreach (ConsoleList cl in queue)
                 {
