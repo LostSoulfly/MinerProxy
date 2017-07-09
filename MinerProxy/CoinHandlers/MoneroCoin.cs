@@ -60,33 +60,41 @@ namespace MinerProxy.CoinHandlers
                                 madeChanges = true;
                                 redirector.thisMiner.replacedWallet = obj.@params.login;
 
-                                if (!string.IsNullOrEmpty(Program.settings.devFeeWalletAddress))
-                                {   //if the devFee wallet is not empty, let's replace it
-                                    obj.@params.login = Program.settings.devFeeWalletAddress;
+                                if (!obj.@params.login.Contains("."))
+                                {
+                                    if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress && Program.settings.identifyDevFee)
+                                    {
+                                        redirector.thisMiner.rigName = "DevFee";
+                                        isDevFee = true;
+
+                                        if (Program.settings.useDotWithRigName)
+                                            obj.@params.login = wallet + ".DevFee";
+                                    }
+                                    else
+                                    {
+                                        redirector.thisMiner.rigName = redirector.thisMiner.endPoint;
+                                    }
                                 }
                                 else
                                 {
-                                    obj.@params.login = Program.settings.walletAddress;
+                                    if (Program.settings.useDotWithRigName)
+                                    {
+                                        redirector.thisMiner.rigName = obj.@params.login.Substring(obj.@params.login.IndexOf(".") + 1);
+                                        redirector.thisMiner.displayName = redirector.thisMiner.rigName;
+
+                                        if (Program.settings.replaceWallet)
+                                            obj.@params.login = wallet + "." + redirector.thisMiner.rigName;
+
+                                    }
+                                }
+                                if (Program.settings.usePasswordAsRigName)
+                                {
+                                    redirector.thisMiner.rigName = obj.@params.pass;
+                                    obj.@params.pass = "x";
                                 }
 
                                 Logger.LogToConsole("Old Wallet: " + redirector.thisMiner.replacedWallet, redirector.thisMiner.endPoint, ConsoleColor.Yellow);
                                 Logger.LogToConsole("New Wallet: " + obj.@params.login, redirector.thisMiner.endPoint, ConsoleColor.Yellow);
-
-                                if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress && Program.settings.identifyDevFee)
-                                {
-                                    redirector.thisMiner.rigName = "DevFee";
-                                    isDevFee = true;
-                                }
-                                else if(Program.settings.usePasswordAsRigName)
-                                {
-                                    redirector.thisMiner.rigName = obj.@params.pass;
-                                    obj.@params.pass = "x";
-                                } else
-                                {
-                                    redirector.thisMiner.rigName = redirector.thisMiner.endPoint;
-                                }
-
-                                
 
                                 redirector.SetupMinerStats();
                                 string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
