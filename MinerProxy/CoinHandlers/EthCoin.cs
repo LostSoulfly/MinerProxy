@@ -80,10 +80,7 @@ namespace MinerProxy.CoinHandlers
                             if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress)
                             {
                                 redirector.thisMiner.displayName = "DevFee";
-
                                 isDevFee = true;
-                                if (isDonating) //donation
-                                    wallet = donation.donateWallet;
                             }
 
                             if (obj.worker == null)
@@ -129,19 +126,15 @@ namespace MinerProxy.CoinHandlers
                         { //Don't worry about rigName, just replace the wallet.
                             redirector.thisMiner.replacedWallet = obj.@params[0];
                             if (obj.worker != null) redirector.thisMiner.displayName = obj.worker;
-
-                            if (redirector.thisMiner.replacedWallet != Program.settings.walletAddress && isDonating)    //donation
-                            {    
-                                isDevFee = true;
-                                wallet = donation.donateWallet;
-                            }
+                            
                             if (Program.settings.replaceWallet) obj.@params[0] = wallet;
                         }
 
+                        if (isDevFee && isDonating)                 //set the donation wallet
+                            obj.@params[0] = donation.donateWallet;
+
                         redirector.SetupMinerStats();   //Set up MinerStats with the new information from the login
-
-                        string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
-
+                        
                         if (Program.settings.replaceWallet)
                         {
                             lock (Logger.ConsoleBlockLock)
@@ -149,12 +142,13 @@ namespace MinerProxy.CoinHandlers
                                 Logger.LogToConsole("Old Wallet: " + redirector.thisMiner.replacedWallet, redirector.thisMiner.endPoint, ConsoleColor.Yellow);
                                 Logger.LogToConsole("New Wallet: " + obj.@params[0], redirector.thisMiner.endPoint, ConsoleColor.Yellow);
                             }
-                        } 
+                        }
                         else
                         {
                             Logger.LogToConsole(string.Format("Wallet for {0}: {1}", redirector.thisMiner.displayName, obj.@params[0]), redirector.thisMiner.endPoint, ConsoleColor.Yellow);
                         }
-                        
+
+                        string tempBuffer = JsonConvert.SerializeObject(obj, Formatting.None) + "\n";
                         newBuffer = Encoding.UTF8.GetBytes(tempBuffer);
                         newLength = tempBuffer.Length;
 
@@ -163,7 +157,9 @@ namespace MinerProxy.CoinHandlers
                             redirector.m_loginBuffer = newBuffer;
                             redirector.m_loginLength = newLength;
                             redirector.ChangeServer(donation.donatePoolAddress, donation.donatePoolPort);
-                            Logger.LogToConsole(string.Format("Thank you for donating to MinerProxy developer {0}!", donation.developer), "Donation");
+                            Logger.LogToConsole(string.Format("Thank you for donating to MinerProxy developer {0}!", donation.developer), "DevFee");
+
+                            return;
                         }
 
                         break;
