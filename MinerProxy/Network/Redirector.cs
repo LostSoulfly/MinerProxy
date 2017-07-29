@@ -46,7 +46,7 @@ namespace MinerProxy.Network
 
                 color = ConsoleColor.DarkCyan;
                 
-                if (thisMiner.hashrate == 0) // Nicehash doesn't report hashrate
+                if (thisMiner.hashrate != 0) // Nicehash doesn't report hashrate
                     Logger.LogToConsole(string.Format("Hashrate: {0}", thisMiner.hashrate.ToString("#,##0,Mh/s").Replace(",", ".")), thisMiner.endPoint, color);
 
                 if (thisMiner.submittedShares != thisMiner.acceptedShares) //No reason to show if they match, save space with multiple rigs
