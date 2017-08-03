@@ -213,6 +213,8 @@ namespace MinerProxy
                 case "SC":
                     return true;
 
+                case "ZCASH":
+                case "HUSH":
                 case "ZEC":
                     return true;
 

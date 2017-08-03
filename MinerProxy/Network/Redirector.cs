@@ -223,8 +223,11 @@ namespace MinerProxy.Network
                 case "SC":
                     m_coinHandler.OnSiaServerPacket(buffer, length);
                     break;
-
+                    
+                case "ZCASH":
+                case "HUSH":
                 case "ZEC":
+                    m_coinHandler.OnZcashServerPacket(buffer, length);
                     break;
 
                 case "PASC":
@@ -275,8 +278,11 @@ namespace MinerProxy.Network
                 case "SC":
                     m_coinHandler.OnSiaClientPacket(buffer, length);
                     break;
-
+                    
+                case "ZCASH":
+                case "HUSH":
                 case "ZEC":
+                    m_coinHandler.OnZcashClientPacket(buffer, length);
                     break;
 
                 case "PASC":
@@ -330,7 +336,10 @@ namespace MinerProxy.Network
                     m_coinHandler = new SiaCoin(this);
                     break;
 
+                case "HUSH":
                 case "ZEC":
+                case "ZCASH":
+                    m_coinHandler = new Zcash(this);
                     break;
 
                 case "PASC":
@@ -354,6 +363,8 @@ namespace MinerProxy.Network
                 case "XMR":
                     m_coinHandler = new MoneroCoin(this);
                     break;
+
+
 
                 case "TCP":
                     break;
