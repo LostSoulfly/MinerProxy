@@ -197,8 +197,10 @@ namespace MinerProxy
                                 Console.WriteLine("Miner rejectedShares: {0}", _minerStats[i].rejectedShares);
                                 Console.WriteLine("Miner hashrate: {0}", _minerStats[i].hashrate);
                                 Console.WriteLine("Miner GetAverageHashrate: {0}", _minerStats[i].GetAverageHashrate());
-                                Console.WriteLine("Miner Wallets:");
-                                Console.WriteLine(string.Join("\n", MinerManager.GetMinerWallets(_minerStats[i].displayName).ToArray()));
+                                if (!String.IsNullOrEmpty(_minerStats[i].displayName)) {
+                                    Console.WriteLine("Miner Wallets:");
+                                    Console.WriteLine(string.Join("\n", MinerManager.GetMinerWallets(_minerStats[i].displayName).ToArray()));
+                                }
                             }
                             break;
 
