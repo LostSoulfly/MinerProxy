@@ -113,7 +113,7 @@ namespace MinerProxy.CoinHandlers
                                 Newtonsoft.Json.Linq.JValue val = dyn.@params[0];
                                 string wallet = val.Value.ToString();
 
-                                if ((Program.settings.debug) && (redirector.thisMiner.replacedWallet != wallet))
+                                if (Program.settings.debug)
                                 {
                                     lock (Logger.ConsoleBlockLock)
                                     {
