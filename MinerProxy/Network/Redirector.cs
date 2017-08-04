@@ -376,21 +376,18 @@ namespace MinerProxy.Network
         {
             thisMiner.submittedShares++;
             MinerManager.AddSubmittedShare(thisMiner.displayName);
-            //todo: add to MinerStats global list
         }
 
         internal void RejectedShare()
         {
             thisMiner.rejectedShares++;
             MinerManager.AddRejectedShare(thisMiner.displayName);
-            //todo: add to MinerStats global list
         }
 
         internal void AcceptedShare()
         {
             thisMiner.acceptedShares++;
             MinerManager.AddAcceptedShare(thisMiner.displayName);
-            //todo: add to MinerStats global list
         }
 
         internal void SetupMinerStats()
