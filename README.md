@@ -56,6 +56,9 @@ useWorkerWithRigName: If your pool uses -eworker, set this to true (and report b
 colorizeConsole: Adds color to the console. Yellows, greens, reds, etc.
 replaceWallet: Replace all wallets (including DevFee wallets)
 useWebSockServer: Listen for connectionson webSocketPort. Will you be using the (partially implemented) web UI?
+useRigNameAsEndPoint: When showing Endpoint in log output, this will replace the IP address with the Rig's reported name.
+donateDevFee: Default is false, but setting to true enables donation of a percentage of DevFee connections.
+percentToDonate: The percentage of DevFee connections you'd like to donate, see more below.
 rigStatsIntervalSeconds: Console prints stats (hashrate, shares, time connected) for each Rig x seconds.
 walletAddress: You can specify a wallet, or a wallet and a RigName (with a . or /)   
 devFeeWalletAddress: Replace DevFee wallet with this wallet, otherwise leave blank for default wallet.
@@ -63,6 +66,12 @@ minedCoin: Set the coin you want to mine, check below for details on supported c
 ```
 
 It's important to note that you don't have to supply a RigName in your walletAddress. If you just put your wallet in there, so long as you have the proper useDot/useSlash/useWorker, your miner will be identified (and reported to the pool) correctly but the wallet will still be replaced with walletAddress.
+
+### Donation
+If you choose to Donate a portion of DevFee to MinerProxy maintainers, this is how it works:
+Every time Claymore starts mining the DevFee, it starts a new connection to the pool (make sure you don't have "-allpools 1" set) to mine for 36 or 72 seconds, depending on whether you're dual mining. Let's assume that you want to donate and have set "percentToDonate" to "10" in the JSON file, in which case you would be donating only the DevFee 10% of the time, and keeping the DevFee 90% of the time.
+
+
 
 ### Coins
 
@@ -72,9 +81,8 @@ Coins currently supported
 - [x] NICEHASH: Thanks, @Samut3!
 - [x] SIA: Partial, early stages
 - [x] XMR: Partial, early stages
-- [ ] ZEC
+- [X] ZEC: Partial, only tested with HUSH (EWBF/Claymore)
 - [ ] PASC
-- [ ] DCR
 - [ ] LBRY
 - [ ] CRY
 
@@ -101,6 +109,8 @@ If you run the Proxy on your local network, Claymore will display this error:
 I'm not sure how to resolve this, other than running the proxy from a remote computer.
 My mining rigs are off-site, so I'm run the proxy from home.
 Whether this will actually cause stale shares, I don't know. There's a lot of suspicion behind Claymore and its handling of Stale shares, but I'm open to speculation.
+
+My personal solution involves using my external, public IP address as my pool address in my mining software, with port forwarding enabled on my router to redirect the connections to MinerProxy. With this, Claymore doesn't seem to realize it's a local proxy and most importantly, stale shares drop significantly.
 
 # Todo
 - [x] Log traffic to file
