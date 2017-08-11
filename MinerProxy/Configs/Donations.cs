@@ -33,6 +33,7 @@ namespace MinerProxy
         public static List<DonateList> etcDonateList = new List<DonateList>();
         public static List<DonateList> ubqDonateList = new List<DonateList>();
         public static List<DonateList> expDonateList = new List<DonateList>();
+        public static List<DonateList> zecDonateList = new List<DonateList>();
 
         public static void SetUpDonateLists()
         {
@@ -42,6 +43,7 @@ namespace MinerProxy
             xmrDonateList.Add(new DonateList("pool.usxmrpool.com", 3333, "43tVLRGvcaadfw4HrkUcpEKmZd9Y841rGKvsLZW8XvEVSBX1GrGezWvQYDdoNwNHAwTqSyK7iqyyqMSpDoUVKQmM43nzT72", "LostSoulfly"));
             ubqDonateList.Add(new DonateList("ubq.pool.sexy", 9009, "0x0c0ff71b06413865fe9fE9a4C40396c136a62980", "LostSoulfly"));
             expDonateList.Add(new DonateList("exp.digger.ws", 7008, "0x4412f6f92616fB20B9c4E57414F20e5357E2d776.Donation", "LostSoulfly"));
+            //zecDonateList.Add(new DonateList("mining.miningspeed.com", 3092, "t1ZHrvmtgd3129iYEcFm21XMv5ojdh2xmsf.Donation", "LostSoulFly"));
 
             //Samut
             ethDonateList.Add(new DonateList("us1.ethermine.org", 4444, "0xcddb36acb8c9fba074bf824edfede05d3a3ec221.Donation", "samut3"));
