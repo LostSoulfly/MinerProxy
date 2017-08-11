@@ -395,9 +395,15 @@ namespace MinerProxy.Network
             if (string.IsNullOrEmpty(thisMiner.displayName))
                 thisMiner.displayName = thisMiner.rigName;
 
-            if (Program.settings.useRigNameAsEndPoint)
+            if (string.IsNullOrEmpty(thisMiner.displayName))
+            {
+                thisMiner.displayName = thisMiner.endPoint;
+            }
+            else if (Program.settings.useRigNameAsEndPoint)
+            {
                 thisMiner.endPoint = thisMiner.displayName;
-            
+            }
+
             MinerManager.AddNewMiner(thisMiner.displayName);
             MinerManager.SetConnectionStartTime(thisMiner.displayName, thisMiner.connectionStartTime);
             MinerManager.SetWorkerName(thisMiner.displayName, thisMiner.workerName);
