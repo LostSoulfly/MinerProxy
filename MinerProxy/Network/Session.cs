@@ -99,10 +99,16 @@ namespace MinerProxy.Network
             {
                 m_disposed = true;
 
-                m_socket.Shutdown(SocketShutdown.Both);
-                m_socket.Close();
+                try
+                {
+                    m_socket.Shutdown(SocketShutdown.Both);
+                    BufferPool.Put(m_buffer);
+                }
+                finally
+                {
+                    m_socket.Close();
+                }
 
-                BufferPool.Put(m_buffer);
 
                 if (OnDisconnected != null)
                     OnDisconnected();
