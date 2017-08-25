@@ -77,6 +77,7 @@
   <ItemGroup>
     <Compile Include="CoinHandlers\MoneroCoin.cs" />
     <Compile Include="CoinHandlers\Zcash.cs" />
+    <Compile Include="Configs\Pool.cs" />
     <Compile Include="JsonProtocols\MoneroProtocol.cs" />
     <Compile Include="Miners\MinerManager.cs" />
     <Compile Include="Network\BufferPool.cs" />

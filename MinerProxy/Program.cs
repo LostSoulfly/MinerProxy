@@ -152,6 +152,13 @@ namespace MinerProxy
                             Logger.LogToConsole((settings.showEndpointInConsole) ? "Endpoint prefix enabled" : "Endpoint prefix disabled", "MinerProxy");
                             break;
 
+                        case "P":
+                            Console.WriteLine("Pool count: " + settings.poolList.Count);
+                            Console.WriteLine("Curent: " + settings.GetCurrentPool().poolAddress + ":" + settings.GetCurrentPool().poolPort);
+                            Console.WriteLine("New Pool:" + settings.GetNextPool().poolAddress + ":" + settings.GetCurrentPool().poolPort);
+
+                            break;
+
                         case "L":
                             settings.log = !settings.log;
                             Logger.LogToConsole((settings.log) ? "Logging enabled" : "Logging disabled", "MinerProxy");
@@ -279,8 +286,8 @@ namespace MinerProxy
                         return; //if the address supplied isn't allowed, just return and keep listening.
                     }
                 }
-                
-                new Redirector(socket, settings.remotePoolAddress, settings.remotePoolPort);
+
+                new Redirector(socket, settings.GetCurrentPool().poolAddress, settings.GetCurrentPool().poolPort);
             
             }
             catch (SocketException se)
@@ -291,7 +298,7 @@ namespace MinerProxy
 
         private static void UpdateConsoleTitle()
         {
-            Console.Title = string.Format("MinerProxy: {0}:{1} Clients: {2}", settings.remotePoolAddress, settings.remotePoolPort, currentClients);
+            Console.Title = string.Format("MinerProxy: {0}:{1} Clients: {2}", settings.GetCurrentPool().poolAddress, settings.GetCurrentPool().poolPort, currentClients);
         }
 
         public static void DecrementClientCount()

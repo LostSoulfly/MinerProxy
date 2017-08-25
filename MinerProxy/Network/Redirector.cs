@@ -127,6 +127,9 @@ namespace MinerProxy.Network
                 thisMiner.connectionAlive = true;
                 MinerManager.SetConnectionAlive(thisMiner.displayName, thisMiner.connectionAlive);
 
+                //reset the failed connection counter for failover switching
+                Program.settings.ResetFailedConnects();
+                
                 m_server.Receive();
 
                 if (!m_changingServers)
@@ -150,13 +153,17 @@ namespace MinerProxy.Network
                 if (m_changingServers)
                 {
                     Logger.LogToConsole(string.Format("Donation pool connection failed, using original pool {0} ({1})", se.ErrorCode, thisMiner.connectionName), thisMiner.endPoint);
-                    ChangeServer(Program.settings.remotePoolAddress, Program.settings.remotePoolPort);
+                    ChangeServer(Program.settings.GetCurrentPool().poolAddress, Program.settings.GetCurrentPool().poolPort);
                 }
                 else
                 {
                     m_client.Dispose();
                     statusUpdateTimer.Enabled = false;
-                    Logger.LogToConsole(string.Format("Connection bridge failed with {0} ({1})", se.ErrorCode, thisMiner.connectionName), thisMiner.endPoint, ConsoleColor.Red);
+                    Logger.LogToConsole(string.Format("Connection bridge failed with {0} ({1}). {2} total failures.",
+                        se.ErrorCode,
+                        thisMiner.connectionName,
+                        Program.settings.IncrementFailedConnects()),
+                        thisMiner.endPoint, ConsoleColor.Red);
                 }
             }
         }
