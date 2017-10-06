@@ -86,6 +86,10 @@ namespace MinerProxy.CoinHandlers
                                             obj.@params.login = wallet + "." + redirector.thisMiner.rigName;
 
                                     }
+                                    else
+                                    {
+                                        obj.@params.login = wallet;
+                                    }
                                 }
                                 if (Program.settings.usePasswordAsRigName)
                                 {
