@@ -154,7 +154,7 @@ namespace MinerProxy
 
                         case "P":
                             Console.WriteLine("Pool count: " + settings.poolList.Count);
-                            Console.WriteLine("Curent: " + settings.GetCurrentPool().poolAddress + ":" + settings.GetCurrentPool().poolPort);
+                            Console.WriteLine("Current: " + settings.GetCurrentPool().poolAddress + ":" + settings.GetCurrentPool().poolPort);
                             Console.WriteLine("New Pool:" + settings.GetNextPool().poolAddress + ":" + settings.GetCurrentPool().poolPort);
 
                             break;
@@ -218,7 +218,7 @@ namespace MinerProxy
 
                         case "O":
                             DonateList d = new DonateList();
-                            double success = 0;
+                            int success = 0;
                             for (int i = 0; i < 1000; i++)  //be careful doing this with debug and more than 10k. Could take a while.
                             {
                                 if (CheckForDonation(out d, "ETH"))

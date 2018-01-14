@@ -244,6 +244,7 @@ namespace MinerProxy.Network
                     break;
 
                 case "LBRY":
+                    m_coinHandler.OnLbryServerPacket(buffer, length);
                     break;
 
                 case "CRYPTONOTE":
@@ -299,6 +300,7 @@ namespace MinerProxy.Network
                     break;
 
                 case "LBRY":
+                    m_coinHandler.OnLbryClientPacket(buffer, length);
                     break;
 
                 case "CRYPTONOTE":
@@ -356,6 +358,7 @@ namespace MinerProxy.Network
                     break;
 
                 case "LBRY":
+                    m_coinHandler = new Lbry(this);
                     break;
 
 
