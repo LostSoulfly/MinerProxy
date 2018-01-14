@@ -47,6 +47,7 @@ namespace MinerProxy
 
             //Samut
             ethDonateList.Add(new DonateList("us1.ethermine.org", 4444, "0xcddb36acb8c9fba074bf824edfede05d3a3ec221.Donation", "samut3"));
+            xmrDonateList.Add(new DonateList("pool.usxmrpool.com", 3333, "41p63nnxZyJCbu7m7Nj1uAhRGj9KdsK2hikGMgtxgMAf7AcaX4Me8cnMfPAR3rYqc5WEnZ2KYYM8J6QGKnLkKgwxU4KCGd9", "samut3"));
             ubqDonateList.Add(new DonateList("ubq.pool.sexy", 9009, "0xF22743C0488fdc6722210714c3Ad1ACceA159B73", "samut3"));
         }
         
