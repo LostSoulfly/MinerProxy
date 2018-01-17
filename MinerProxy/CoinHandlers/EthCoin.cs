@@ -173,6 +173,11 @@ namespace MinerProxy.CoinHandlers
                         Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + " found a share. [{0} shares found]", redirector.thisMiner.submittedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
                         break;
 
+                    case 10: //eth_submitWork (Apparently Claymore 10.4 sends this)
+                        redirector.SubmittedShare();
+                        Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + " found a share. [{0} shares found]", redirector.thisMiner.submittedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
+                        break;
+
                     case 6: //eth_submitHashrate
                         long hashrate = Convert.ToInt64(obj.@params[0], 16);
                         redirector.thisMiner.hashrate = hashrate;
@@ -294,6 +299,21 @@ namespace MinerProxy.CoinHandlers
                                 break;
 
                             case 4:
+                                if (obj.result == true)
+                                {
+                                    redirector.AcceptedShare();
+
+                                    Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got accepted. [{0} shares accepted]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
+
+                                }
+                                else if (obj.result == false)
+                                {
+                                    redirector.RejectedShare();
+                                    Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
+                                }
+                                break;
+
+                            case 10: // Apparently Claymore 10.4 sends this
                                 if (obj.result == true)
                                 {
                                     redirector.AcceptedShare();
