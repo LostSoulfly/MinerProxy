@@ -19,6 +19,8 @@ namespace MinerProxy.CoinHandlers
             if (Program.settings.debug) Logger.LogToConsole("Zcash handler initialized", redirector.thisMiner.endPoint);
         }
 
+        int lastShareSubmitID;
+
         internal void OnZcashClientPacket(byte[] buffer, int length)
         {
             bool madeChanges = false;
@@ -122,6 +124,10 @@ namespace MinerProxy.CoinHandlers
                                     }
                                 }
                             }
+                            if (dyn.id != null)
+                                lastShareSubmitID = dyn.id;
+                            else
+                                lastShareSubmitID = -1;
 
                             redirector.SubmittedShare();
                             Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + " found a share. [{0} shares found]", redirector.thisMiner.submittedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
@@ -181,6 +187,21 @@ namespace MinerProxy.CoinHandlers
                                 Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.rejectedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
                             }
                             break;
+                    }
+
+                    if ((int)dyn.id == lastShareSubmitID) //Bminer fix
+                    {
+                        if ((bool)dyn.result)
+                        {
+                            redirector.AcceptedShare();
+                            Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got accepted. [{0} shares accepted]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
+                        }
+                        else
+                        {
+                            redirector.RejectedShare();
+                            Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.rejectedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
+                        }
+                        lastShareSubmitID = -1;
                     }
                 }
 
