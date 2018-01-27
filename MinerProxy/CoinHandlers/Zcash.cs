@@ -203,6 +203,10 @@ namespace MinerProxy.CoinHandlers
                                 redirector.RejectedShare();
                                 Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.rejectedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
                             }
+                        }else if (dyn.result == null && dyn.error != null)
+                        {
+                            redirector.RejectedShare();
+                            Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.rejectedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
                         }
                         lastShareSubmitID = -1;
                     }
