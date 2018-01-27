@@ -192,7 +192,7 @@ namespace MinerProxy.CoinHandlers
                             break;
                     }
 
-                    if ((int)dyn.id == lastShareSubmitID) // Testin
+                    if ((int)dyn.id != 4 && (int)dyn.id == lastShareSubmitID) // Testin
                     {
                         if (dyn.result != null)
                         {
