@@ -191,15 +191,18 @@ namespace MinerProxy.CoinHandlers
 
                     if ((int)dyn.id == lastShareSubmitID) //Bminer fix
                     {
-                        if ((bool)dyn.result)
+                        if (dyn.result != null)
                         {
-                            redirector.AcceptedShare();
-                            Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got accepted. [{0} shares accepted]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
-                        }
-                        else
-                        {
-                            redirector.RejectedShare();
-                            Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.rejectedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
+                            if ((bool)dyn.result)
+                            {
+                                redirector.AcceptedShare();
+                                Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got accepted. [{0} shares accepted]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
+                            }
+                            else
+                            {
+                                redirector.RejectedShare();
+                                Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.rejectedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
+                            }
                         }
                         lastShareSubmitID = -1;
                     }
