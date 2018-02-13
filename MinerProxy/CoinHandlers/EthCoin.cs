@@ -13,8 +13,11 @@ namespace MinerProxy.CoinHandlers
     {
         internal Redirector redirector;
 
+        private int submitWorkID;
+
         public EthCoin(Redirector r)
         {
+            submitWorkID = -1;
             redirector = r; //when this class is initialized, a reference to the Redirector class must be passed
             if (Program.settings.debug) Logger.LogToConsole("EthCoin handler initialized", redirector.thisMiner.endPoint);
             
@@ -34,6 +37,7 @@ namespace MinerProxy.CoinHandlers
                 EthClientRootObject obj;
 
                 obj = JsonConvert.DeserializeObject<EthClientRootObject>(Encoding.UTF8.GetString(buffer, 0, length));
+                
                 switch (obj.id)
                 {
                     case 2: //eth_submitLogin
@@ -168,7 +172,7 @@ namespace MinerProxy.CoinHandlers
                         if (Program.settings.debug) Logger.LogToConsole("eth_getWork from Client.", redirector.thisMiner.endPoint);
                         break;
 
-                    case 4: //eth_submitWork
+                    /*case 4: //eth_submitWork
                         redirector.SubmittedShare();
                         Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + " found a share. [{0} shares found]", redirector.thisMiner.submittedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
                         break;
@@ -176,7 +180,7 @@ namespace MinerProxy.CoinHandlers
                     case 10: //eth_submitWork (Apparently Claymore 10.4 sends this)
                         redirector.SubmittedShare();
                         Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + " found a share. [{0} shares found]", redirector.thisMiner.submittedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
-                        break;
+                        break;*/
 
                     case 6: //eth_submitHashrate
                         long hashrate = Convert.ToInt64(obj.@params[0], 16);
@@ -203,6 +207,17 @@ namespace MinerProxy.CoinHandlers
                         }
                         break;
 
+                }
+
+                switch (obj.method)
+                {
+                    case "eth_submitWork":
+                        {
+                            redirector.SubmittedShare();
+                            Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + " found a share. [{0} shares found]", redirector.thisMiner.submittedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
+                            submitWorkID = (int)obj.id;
+                            break;
+                        }
                 }
 
             }
@@ -298,7 +313,7 @@ namespace MinerProxy.CoinHandlers
                                 }
                                 break;
 
-                            case 4:
+                            /*case 4:
                                 if (obj.result == true)
                                 {
                                     redirector.AcceptedShare();
@@ -326,7 +341,7 @@ namespace MinerProxy.CoinHandlers
                                     redirector.RejectedShare();
                                     Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
                                 }
-                                break;
+                                break;*/
 
                             case 6:
                                 if (Program.settings.debug) Logger.LogToConsole(string.Format("Hashrate accepted: {0}", obj.result), redirector.thisMiner.endPoint, ConsoleColor.DarkGreen);
@@ -344,6 +359,22 @@ namespace MinerProxy.CoinHandlers
                                     }
                                 }
                                 break;
+                        }
+
+                        if (((int)obj.id).Equals(submitWorkID))
+                        {
+                            if (obj.result == true)
+                            {
+                                redirector.AcceptedShare();
+
+                                Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got accepted. [{0} shares accepted]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Green);
+
+                            }
+                            else if (obj.result == false)
+                            {
+                                redirector.RejectedShare();
+                                Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.acceptedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
+                            }
                         }
                     }
                     catch (Exception ex2)
