@@ -78,7 +78,7 @@ Every time Claymore starts mining the DevFee, it starts a new connection to the 
 Coins currently supported
 - [x] ETH/ETC: Ethereum + Classic
 - [x] UBQ/EXP: Partial, try using ETH as minedCoin
-- [x] NICEHASH: Thanks, @Samut3!
+- [x] NICEHASH (EthereumStratum/1.0.0): Thanks, @Samut3!
 - [x] SIA: Partial, early stages
 - [x] XMR: Partial, early stages
 - [X] ZEC: Partial, only tested with HUSH (EWBF/Claymore)
