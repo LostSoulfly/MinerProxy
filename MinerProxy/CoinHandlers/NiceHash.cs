@@ -178,7 +178,7 @@ namespace MinerProxy.CoinHandlers
                                 Logger.LogToConsole("Stratum Authorization failure: " + redirector.thisMiner.displayName, redirector.thisMiner.endPoint, ConsoleColor.Red);
                             }
                             break;
-                        case 4: //Share
+                        /*case 4: //Share
                             if ((bool)dyn.result)
                             {
                                 redirector.AcceptedShare();
@@ -189,10 +189,10 @@ namespace MinerProxy.CoinHandlers
                                 redirector.RejectedShare();
                                 Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.rejectedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
                             }
-                            break;
+                            break;*/
                     }
 
-                    if ((int)dyn.id != 4 && (int)dyn.id == lastShareSubmitID) // Testin
+                    if (/*(int)dyn.id != 4 && */(int)dyn.id == lastShareSubmitID) // Testin
                     {
                         if (dyn.result != null)
                         {
@@ -206,7 +206,7 @@ namespace MinerProxy.CoinHandlers
                                 redirector.RejectedShare();
                                 Logger.LogToConsole(string.Format(redirector.thisMiner.displayName + "'s share got rejected. [{0} shares rejected]", redirector.thisMiner.rejectedShares), redirector.thisMiner.endPoint, ConsoleColor.Red);
                             }
-                            lastShareSubmitID = -1;
+                            //lastShareSubmitID = -1;
                         }
                     }
                 }
