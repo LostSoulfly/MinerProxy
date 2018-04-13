@@ -40,6 +40,7 @@ namespace MinerProxy.CoinHandlers
                 
                 switch (obj.id)
                 {
+                    case 1:
                     case 2: //eth_submitLogin
 
                         string wallet;
@@ -168,6 +169,7 @@ namespace MinerProxy.CoinHandlers
 
                         break;
 
+                    case 5:
                     case 3: //eth_getWork
                         if (Program.settings.debug) Logger.LogToConsole("eth_getWork from Client.", redirector.thisMiner.endPoint);
                         break;
